@@ -1,6 +1,11 @@
 baseURL = 'https://granat.blog/'
 title = 'Stepan Granat'
 
+# Emit page-relative links (e.g. ../style.css) instead of root-absolute ones.
+# Makes the site work at any path — custom domain root, github.io/<repo>, or
+# opened straight from disk — without rebuilding for a specific baseURL.
+relativeURLs = true
+
 [languages.en]
   locale = 'en-us'
   weight = 1
