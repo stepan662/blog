@@ -18,6 +18,7 @@ is no exception: static HTML, monospace type, no tracking, no clutter.
 ```
 
 - **[blog](/posts)** — things I'm thinking about
+- **[linkedin](https://www.linkedin.com/in/stepan-granat/)**
 - the source for this site (link it in the footer once it's on GitHub)
 
 Find me via the links at the bottom of the page.
