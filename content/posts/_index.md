@@ -1,6 +1,6 @@
 ---
 title: "Blog"
-description: "Writing by Stepan Granat."
+description: "Writing by Štěpán Granát."
 ---
 
 Notes, ideas, and longer write-ups. Newest first.

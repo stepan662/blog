@@ -1,5 +1,5 @@
 baseURL = 'https://granat.blog/'
-title = 'Stepan Granat'
+title = "Štěpán's web and blog"
 
 # Root-absolute links (/style.css, /posts). Requires the site to be served at
 # the domain root and built with this baseURL — which the GH Actions workflow
@@ -15,8 +15,8 @@ disablePathToLower = false
 
 [params]
   # Shown in the header frame and footer
-  author = 'Stepan Granat'
-  description = 'Personal site and blog of Stepan Granat.'
+  author = 'Štěpán Granát'
+  description = 'Personal site and blog of Štěpán Granát.'
   # Social links: key = label shown in the footer, value = full URL.
   # Add any platform by adding a line — the template renders them all.
   # (For email, use a mailto: URL or just the address.)

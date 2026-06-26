@@ -1,13 +1,13 @@
 ---
-title: "Stepan Granat"
-description: "Personal site and blog of Stepan Granat."
+title: "Štěpán Granát"
+description: "Personal site and blog of Štěpán Granát."
 ---
 
 ```
 > whoami
 ```
 
-Hi, I'm **Stepan Granat**. This is my corner of the internet — a place for
+Hi, I'm **Štěpán Granát**. This is my corner of the internet — a place for
 notes, projects, and the occasional longer write-up.
 
 I like building things that are small, fast, and a little bit plain. This site
