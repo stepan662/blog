@@ -1,6 +1,7 @@
 ---
 title: "My missing piece for React"
 date: 2026-06-26
+draft: true
 ---
 
 When I was at the university the web was really messy platform. It was around year 2016 and jQuery was starting to be obsolete. Developers knew that the way how we write frontend code is not scalable, but there was not a clear replacement yet. It was the "hot" days of frontend frameworks. Every project I wrote became obsolete almost instantly, because a new better framework always popped up.
