@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-label="garnet gem">
+  <!-- granát = garnet; matches the site's terracotta accent -->
+  <polygon points="9,6 23,6 29,13 16,28 3,13" fill="#b5532b"/>
+  <g stroke="#f7f7f4" stroke-width="1.1" stroke-linejoin="round" stroke-linecap="round" fill="none" opacity="0.9">
+    <line x1="3" y1="13" x2="29" y2="13"/>
+    <line x1="9" y1="6" x2="12.5" y2="13"/>
+    <line x1="23" y1="6" x2="19.5" y2="13"/>
+    <line x1="12.5" y1="13" x2="16" y2="28"/>
+    <line x1="19.5" y1="13" x2="16" y2="28"/>
+    <line x1="3" y1="13" x2="16" y2="28"/>
+    <line x1="29" y1="13" x2="16" y2="28"/>
+  </g>
+</svg>
