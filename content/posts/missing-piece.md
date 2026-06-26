@@ -38,6 +38,167 @@ However, this breaks the isolation of components. The global state can be useful
 
 ### Specialized tools
 
-As soon as I discovered swr/react-query, I've drifted away from redux and my approach was to use specialized tools for specialized tasks. React-query for data fetching formik for forms. Turned out this covers about 80% of your state management and the rest you can just use local state in components or use simple zustand or something like that for small external state.
+As soon as I discovered swr/react-query, I've drifted away from redux and my approach was to use specialized tools for specialized tasks. React-query for data fetching formik for forms. Turned out this covers about 80% of your state management and the rest you can just use local state in components or use zustand for ad hoc shared state.
 
-### Combining the tools
+### Combination create problems
+
+I find the missing 20% problematic. Let me illustrate. At my last employment we had a main view of items, which was quite complicated. It was highly optimized infinite scroll view with editor and many other things connected to it. The state management was quite complicated mainly because of optimization reasons. It was necessary to store fetched items in one place, so we can update them without refetching. We also needed to know what is a current edited value and many more things, highly connected between each other.
+
+Because of this we decided to have state for this view centralized in one component - something like a mini redux store. However, I found the combination of tools quite hard. You can for example create zustand store with some state, which would be useful for e.g. the editor state and this we can share in multiple components, ok. But what if I need to combine data that I've fetched with this state? Data were fetched through react-query and they live in the react dom. I would need to pass them down via props or context, but that would not be performant.
+
+### Missing piece
+
+What we were missing was a state orchestration tool. We basically have different external stores, react-query has it's own store, zustand as well. I would need to combine them into one centralized API, which would be accessible to all children. And the children don't have to care where is the state coming from.
+
+So I've built a simple library to do this. My idea was basically to have an extension to react-context, which would be subscribable and pass all the combined state down through that. I found this library [use-context-selector](https://github.com/dai-shi/use-context-selector). This is great, but I was missing one piece.
+
+### Passing actions down is painful (unnecessarly)
+
+Let's look at how this would look like on a simplified case:
+
+```tsx
+import { createContext, useContextSelector } from 'use-context-selector';
+
+const context = createContext(null);
+
+
+const StateProvider = ({ children }) => {
+  const items = useQuery(....)
+  const updateItem = useQuery(...)
+  const [value, setValue] = useState('')
+
+  const state = {
+    value,
+    setValue,
+    items: items.data,
+    updateItem(id) {
+      update.mutate({
+        id,
+        value,
+        ....
+      })
+    }
+  }
+
+  return (
+    <context.Provider value={state}>
+      {children}
+    </context.Provider>
+  )
+};
+
+// editor is rendered on item level in the infinitelly scrollable list
+const Editor = ({ item }) => {
+  const value = useContextSelector(context, c => c.value)
+  const updateItem = useContextSelector(context, c => c.updateItem)
+  return (
+    <Editor 
+      value={value} 
+      onUpdate={() => updateItem(item.id)} 
+    />
+  )
+}
+
+```
+
+> Note: Since react 18 it is quite easy to implement selectable context yourself with `useSyncExternalStore`, so you don't even need this library.
+
+This is quite nice, but there is one quite big issue. The whole point of this construction is performance, and `updateItem` is not stable - it's re-generated on every render. So because we are subscribing to it, we are re-rendering the editor on every change of the context. For this to be truely performant, we would need to wrap `updateItem` with `useCallback`, but that is dependant on `value`, so we would need to add it to dependencies.
+
+I'm sure you know this problem if you use React. Thing is, this is all quite unnecessary. We would want the `updateItem` to behave similarly to the react state update, which is stable even if the internal state changes.
+
+### How to solve this?
+
+I had a few iterations on this, but finally I've came to quite simple solution. Let's let the user separate state from actions.
+
+```ts
+
+  const state = {
+    value,
+    setValue,
+    items: items.data,
+  }
+
+  const actions = {
+    setValue,
+    updateItem(id) {
+      update.mutate({
+        id,
+        value,
+        ....
+      })
+    }
+  }
+```
+
+The actions object should be stable, so we can create proxy object which mirrors the actions object, but is created only once and has stable functions.
+
+```ts
+  const currentActionsRef = useRef(actions);
+  const stableActionsRef = useRef<A>();
+
+  currentActionsRef.current = actions;
+
+  // stable actions
+  if (!stableActionsRef.current) {
+    Object.keys(actions).forEach((key) => {
+      stableActionsRef.current[key] = (...params) => currentActionsRef.current[key](...params)
+    })
+  }  
+```
+
+### Final solution
+
+Now we have `state` and `stableActionsRef.current`, which we can then just pass through context, actions will be stable and state which will be subscribable. I've created a library out of this, which is called `react-arven`. Let's look at the result:
+
+```tsx
+
+import { createProvider } from 'react-arven';
+
+const [ItemsProvider, useItemsActions, useItemsState] = createProvider(() => {
+  const items = useQuery(....)
+  const updateItem = useQuery(...)
+  const [value, setValue] = useState('')
+
+  const state = {
+    value,
+    items: items.data,
+  }
+
+  const actions = {
+    setValue,
+    updateItem(id) {
+      update.mutate({
+        id,
+        value,
+        ....
+      })
+    }
+  }
+
+  return {
+    state,
+    actions
+  }
+});
+
+// editor is rendered on item level in the infinitelly scrollable list
+const Editor = ({ item }) => {
+  const value = useItemsState(c => c.value)
+  const { updateItem } = useItemsActions()
+  return (
+    <Editor 
+      value={value}
+      onUpdate={() => updateItem(item.id)} 
+    />
+  )
+}
+```
+
+The library creates the context internally, and gives you the Provider and two hooks one for state and other for actions. The callback inside of `createProvider` is rendered as a regular react component and is expected to return object with state and action. It also infer types for the hooks.
+
+In the library `actions` needs to be plain object only with functions, you can have nested objects, which is an upgrade from our simple solution.
+
+## How to use it
+
+Even if you have this powerfull tool, I still advice to stick to simple local state in components where possible. I ended up with one global state (logged user, dark mode etc.) and just a few (like 4) other states. Because this works through react-context parts of the application which are not children of this, won't have access to this. Which nicely encapsulates only the relevant parts.
