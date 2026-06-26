@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {{- $title := .Title | default site.Title }}
+  {{- if .IsHome }}<title>{{ site.Title }}</title>
+  {{- else }}<title>{{ .Title }} · {{ site.Title }}</title>{{ end }}
+  <meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{ site.Params.description }}{{ end }}">
+  <meta name="author" content="{{ site.Params.author }}">
+  <link rel="stylesheet" href="{{ "style.css" | relURL }}">
+  {{ with .OutputFormats.Get "rss" -}}
+    <link rel="alternate" type="application/rss+xml" href="{{ .Permalink }}" title="{{ site.Title }}">
+  {{- end }}
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 16 16%22><text y=%2213%22 font-size=%2214%22>%E2%97%86</text></svg>">
+</head>
+<body>
+  <a class="skip" href="#main">skip to content</a>
+  <div class="wrap">
+    {{ partial "header.html" . }}
+    <main id="main">
+      {{ block "main" . }}{{ end }}
+    </main>
+    {{ partial "footer.html" . }}
+  </div>
+</body>
+</html>

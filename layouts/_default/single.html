@@ -1,0 +1,25 @@
+{{ define "main" }}
+<article class="post">
+  <header class="post-header">
+    <h1>{{ .Title }}</h1>
+    <p class="meta muted">
+      <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006-01-02" }}</time>
+      {{ with .ReadingTime }} · {{ . }} min read{{ end }}
+      {{ with .Params.tags }} · {{ range . }}<a class="tag" href="{{ "/tags/" | relURL }}{{ . | urlize }}/">#{{ . }}</a> {{ end }}{{ end }}
+    </p>
+  </header>
+
+  <div class="content">
+    {{ .Content }}
+  </div>
+
+  <nav class="post-nav" aria-label="post navigation">
+    <div class="rule" aria-hidden="true">{{ strings.Repeat 36 "-" }}</div>
+    <div class="post-nav-links">
+      {{ with .PrevInSection }}<a class="prev" href="{{ .RelPermalink }}">&lt;- {{ .Title }}</a>{{ end }}
+      {{ with .NextInSection }}<a class="next" href="{{ .RelPermalink }}">{{ .Title }} -&gt;</a>{{ end }}
+    </div>
+    <p class="back"><a href="{{ "/posts" | relURL }}">&gt; back to blog</a></p>
+  </nav>
+</article>
+{{ end }}

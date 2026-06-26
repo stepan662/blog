@@ -1,0 +1,14 @@
+{{- $name := site.Params.author | default site.Title -}}
+<header class="site-header">
+  <a class="banner" href="{{ "/" | relURL }}" aria-label="{{ $name }} — home">
+<pre aria-hidden="true">{{ printf `+%s+
+| %s |
++%s+` (strings.Repeat 34 "-") (printf "%-32s" $name) (strings.Repeat 34 "-") }}</pre>
+  </a>
+  <nav class="nav" aria-label="primary">
+    {{- range site.Menus.main }}
+    {{- $active := or ($.IsMenuCurrent "main" .) ($.HasMenuCurrent "main" .) }}
+    <a href="{{ .PageRef | relURL }}"{{ if $active }} class="active" aria-current="page"{{ end }}>&gt; {{ .Name }}</a>
+    {{- end }}
+  </nav>
+</header>

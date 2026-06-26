@@ -1,0 +1,18 @@
+{{- $s := site.Params.social -}}
+<footer class="site-footer">
+  <div class="rule" aria-hidden="true">{{ strings.Repeat 36 "-" }}</div>
+  <p class="links">
+    {{- $items := slice -}}
+    {{- with $s.github }}{{ $items = $items | append (printf `<a href="https://github.com/%s" rel="me">github</a>` .) }}{{ end -}}
+    {{- with $s.x }}{{ $items = $items | append (printf `<a href="https://x.com/%s" rel="me">x</a>` .) }}{{ end -}}
+    {{- with $s.mastodon }}{{ $items = $items | append (printf `<a href="%s" rel="me">mastodon</a>` .) }}{{ end -}}
+    {{- with $s.email }}{{ $items = $items | append (printf `<a href="mailto:%s">email</a>` .) }}{{ end -}}
+    {{- with .OutputFormats.Get "rss" }}{{ $items = $items | append (printf `<a href="%s">rss</a>` .Permalink) }}{{ end -}}
+    {{- if $items -}}
+      {{ delimit $items "  ·  " | safeHTML }}
+    {{- else -}}
+      <span class="muted">add social links in hugo.toml</span>
+    {{- end -}}
+  </p>
+  <p class="copy muted">© {{ now.Year }} {{ site.Params.author | default site.Title }}</p>
+</footer>

@@ -1,0 +1,44 @@
+baseURL = 'https://granat.blog/'
+title = 'Stepan Granat'
+
+[languages.en]
+  locale = 'en-us'
+  weight = 1
+
+# Pretty, predictable output
+enableRobotsTXT = true
+disablePathToLower = false
+
+[params]
+  # Shown in the header frame and footer
+  author = 'Stepan Granat'
+  description = 'Personal site and blog of Stepan Granat.'
+  # Social links — fill these in. Empty values are skipped in the template.
+  [params.social]
+    github = ''       # e.g. 'stepangranat'
+    x = ''            # e.g. 'stepangranat'  (twitter/x handle)
+    mastodon = ''     # e.g. 'https://hachyderm.io/@stepangranat'
+    email = ''        # e.g. 'granat.stepan@gmail.com'
+
+[menus]
+  [[menus.main]]
+    name = 'home'
+    pageRef = '/'
+    weight = 10
+  [[menus.main]]
+    name = 'blog'
+    pageRef = '/posts'
+    weight = 20
+
+[markup]
+  [markup.highlight]
+    noClasses = false   # emit CSS classes so our stylesheet controls colors
+    tabWidth = 2
+  [markup.goldmark.renderer]
+    unsafe = true       # allow raw HTML in markdown when needed
+
+[taxonomies]
+  tag = 'tags'
+
+[pagination]
+  pagerSize = 10
