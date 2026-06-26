@@ -1,13 +1,21 @@
-{{- $s := site.Params.social -}}
+{{- /* Social links: every key in [params.social] is rendered, label = key,
+       value = full URL. Add a platform by adding one line in hugo.toml; no
+       template change needed. Keys render alphabetically. "email" auto-gets a
+       mailto: prefix if you omit it. */ -}}
 <footer class="site-footer">
   <div class="rule" aria-hidden="true">{{ strings.Repeat 36 "-" }}</div>
   <p class="links">
     {{- $items := slice -}}
-    {{- with $s.github }}{{ $items = $items | append (printf `<a href="https://github.com/%s" rel="me">github</a>` .) }}{{ end -}}
-    {{- with $s.x }}{{ $items = $items | append (printf `<a href="https://x.com/%s" rel="me">x</a>` .) }}{{ end -}}
-    {{- with $s.mastodon }}{{ $items = $items | append (printf `<a href="%s" rel="me">mastodon</a>` .) }}{{ end -}}
-    {{- with $s.email }}{{ $items = $items | append (printf `<a href="mailto:%s">email</a>` .) }}{{ end -}}
-    {{- with .OutputFormats.Get "rss" }}{{ $items = $items | append (printf `<a href="%s">rss</a>` .Permalink) }}{{ end -}}
+    {{- range $name, $url := site.Params.social -}}
+      {{- with $url -}}
+        {{- $href := . -}}
+        {{- if and (eq $name "email") (not (strings.HasPrefix . "mailto:")) -}}
+          {{- $href = printf "mailto:%s" . -}}
+        {{- end -}}
+        {{- $items = $items | append (printf `<a href="%s" rel="me">%s</a>` $href $name) -}}
+      {{- end -}}
+    {{- end -}}
+    {{- with .OutputFormats.Get "rss" }}{{ $items = $items | append (printf `<a href="%s">rss</a>` .RelPermalink) }}{{ end -}}
     {{- if $items -}}
       {{ delimit $items "  ·  " | safeHTML }}
     {{- else -}}

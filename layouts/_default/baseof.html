@@ -9,6 +9,7 @@
   <meta name="description" content="{{ with .Description }}{{ . }}{{ else }}{{ site.Params.description }}{{ end }}">
   <meta name="author" content="{{ site.Params.author }}">
   <link rel="stylesheet" href="{{ "style.css" | relURL }}">
+  <link rel="stylesheet" href="{{ "syntax.css" | relURL }}">
   {{ with .OutputFormats.Get "rss" -}}
     <link rel="alternate" type="application/rss+xml" href="{{ .Permalink }}" title="{{ site.Title }}">
   {{- end }}

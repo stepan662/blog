@@ -1,10 +1,9 @@
 baseURL = 'https://granat.blog/'
 title = 'Stepan Granat'
 
-# Emit page-relative links (e.g. ../style.css) instead of root-absolute ones.
-# Makes the site work at any path — custom domain root, github.io/<repo>, or
-# opened straight from disk — without rebuilding for a specific baseURL.
-relativeURLs = true
+# Root-absolute links (/style.css, /posts). Requires the site to be served at
+# the domain root and built with this baseURL — which the GH Actions workflow
+# now does (it builds from hugo.toml, not the github.io/<repo> subpath).
 
 [languages.en]
   locale = 'en-us'
@@ -18,12 +17,12 @@ disablePathToLower = false
   # Shown in the header frame and footer
   author = 'Stepan Granat'
   description = 'Personal site and blog of Stepan Granat.'
-  # Social links — fill these in. Empty values are skipped in the template.
+  # Social links: key = label shown in the footer, value = full URL.
+  # Add any platform by adding a line — the template renders them all.
+  # (For email, use a mailto: URL or just the address.)
   [params.social]
-    github = ''       # e.g. 'stepangranat'
-    x = ''            # e.g. 'stepangranat'  (twitter/x handle)
-    mastodon = ''     # e.g. 'https://hachyderm.io/@stepangranat'
-    email = ''        # e.g. 'granat.stepan@gmail.com'
+    github = 'https://github.com/stepan662'
+    linkedin = 'https://www.linkedin.com/in/stepan-granat/'
 
 [menus]
   [[menus.main]]

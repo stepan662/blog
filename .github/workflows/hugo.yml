@@ -43,11 +43,11 @@ jobs:
         id: pages
         uses: actions/configure-pages@v5
       - name: Build with Hugo
-        run: |
-          hugo \
-            --gc \
-            --minify \
-            --baseURL "${{ steps.pages.outputs.base_url }}/"
+        # Build from hugo.toml's baseURL (https://granat.blog/) so links are
+        # root-absolute for the custom-domain root. Do NOT use
+        # steps.pages.outputs.base_url — it resolves to the github.io/<repo>
+        # subpath and would prefix every link with /blog.
+        run: hugo --gc --minify
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:

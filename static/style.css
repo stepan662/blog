@@ -192,6 +192,19 @@ pre code {
 .highlight { margin: 1rem 0; }
 .highlight pre { margin: 0; }
 
+/* The github (light) Chroma theme colors punctuation / attribute / builtin
+   tokens for light backgrounds, but github-dark omits them — so in dark mode
+   they'd keep the light theme's near-black color and become unreadable.
+   Pin them to the body text color in dark mode. The pre.chroma prefix raises
+   specificity so this wins over syntax.css regardless of load order. */
+@media (prefers-color-scheme: dark) {
+  pre.chroma .p,
+  pre.chroma .pi,
+  pre.chroma .na,
+  pre.chroma .nb,
+  pre.chroma .bp { color: var(--fg); }
+}
+
 table {
   border-collapse: collapse;
   width: 100%;
