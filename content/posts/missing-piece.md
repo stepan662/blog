@@ -22,7 +22,7 @@ With zustand you get there by copying everything into the store — but then it'
 
 ## What is actually missing?
 
-I used to reach for React Context, and conceptually it's perfect: the same state hook you'd write in a local component just moves up the tree, and you pass the value and actions down. Usually it isn't even complicated — a bit of `useState`, a `useQuery`, a few functions to mutate it. Find a common ancestor, put the state there, and you've built a "controller" component that resets automatically when it unmounts.
+I used to reach for React Context, and conceptually it's exactly right: it gives that state a single home. You find a common ancestor, move the state up there — the same `useState`, `useQuery` and mutating functions you'd write in a local component, only now combined in one place — and pass the value and actions down. That's the whole point: one "controller" component that owns the combined state and resets automatically when it unmounts.
 
 There's just one problem, and it's a big one: performance. Context forces every subscriber to re-render on every change — one keystroke can re-render half your app. That's why sharing frequently-changing state through context is considered bad practice.
 
@@ -98,19 +98,16 @@ In the picture the edges represent the render hierarchy. And notice that CountPr
 
 ### 3. Stable actions
 
-If you create custom actions (functions mutating the state), they will be unstable values in the context. Let me illustrate the issue:
+If you create custom actions (functions mutating the state), they end up as unstable values in the context. Let me illustrate:
 
 ```tsx
 function FormProvider() {
-  const [formState, setFormState] = (...)
   const { mutate } = useQuery('')
-
-  const submit = useCallback(() => {
-    mutate(formState)
-  }, [mutate, formState])
+  // formState changes on every keystroke → submit is a new function each time
+  const submit = useCallback(() => mutate(formState), [mutate, formState])
 
   return (
-    <Context.Provider value={{formState, setFormState, submit}}>
+    <Context.Provider value={{ formState, setFormState, submit }}>
       {children}
     </Context.Provider>
   )
@@ -118,46 +115,13 @@ function FormProvider() {
 
 function SubmitButton() {
   const submit = useContextSelector(c => c.submit)
-  return (
-    <button onClick={submit}>Submit</button>
-  )
+  return <button onClick={submit}>Submit</button> // re-renders on every keystroke
 }
 ```
 
-If you look closely at this example, you'll see the SubmitButton will re-render on every keystroke in your form. And we are not able to fix it even with ugly `useCallback`, because we need to use formState inside.
+The `SubmitButton` re-renders on every keystroke, and we can't fix it with `useCallback` — `submit` needs `formState` inside, so it has to stay a dependency.
 
-The only way to optimize this is with `useRef`, but the code is really ugly, so cover your eyes:
-
-```tsx
-function FormProvider() {
-  const [formState, setFormState] = (...)
-  const { mutate } = useQuery('')
-
-  const currentSubmitRef = useRef()
-
-  currentSubmitRef.current = () => {
-    mutate(formState)
-  }
-
-  const stableSubmitRef = useRef()
-
-  if (!stableSubmitRef.current) {
-    stableSubmitRef.current = () => currentSubmitRef.current()
-  }
-
-  const submit = stableSubmitRef.current
-
-  return (
-    <Context.Provider value={{formState, setFormState, submit }}>
-      {children}
-    </Context.Provider>
-  )
-}
-```
-
-It's a bit hard to follow, but basically the result of this is a stable proxy function, which will call the original function.
-
-If this pattern looks familiar, it's the same idea as React's own `useEvent` / `useEffectEvent` proposal — a function with a stable identity that always sees the latest state. react-arven applies it to every action for you, so this ref dance never shows up in your own code.
+The only real fix is a `useRef` dance: one ref holding the latest closure, and a second, stable ref that just calls it. It's ugly enough that I'll spare you the code — and if it sounds familiar, it's the same idea as React's own `useEvent` / `useEffectEvent` proposal: a function with a stable identity that always sees the latest state. react-arven applies this to every action for you, so the ref dance never shows up in your own code.
 
 ## Now put it all together
 
@@ -212,7 +176,7 @@ function SubmitButton() {
 
 The body of `createProvider` is a callback, which is basically the body of a regular React component (so you can use hooks), only you have to return an object with `actions` and `state` fields (names are not arbitrary). The library will build the Provider with context for you and also give you two hooks - one for subscribing to the state and other for the actions.
 
-Actions are separate, because we use the trick with the refs to make them stable - we basically create a copy of the actions object with a proxy functions, the shape is exactly the same as you put in, no magic just an optimization.
+Actions are kept separate so the library can make them stable with the ref trick from earlier — same shape you passed in, no magic, just an optimization.
 
 ## TypeScript
 
