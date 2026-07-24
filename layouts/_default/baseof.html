@@ -16,6 +16,45 @@
   <link rel="icon" href="{{ "favicon.svg" | relURL }}" type="image/svg+xml">
   <link rel="icon" href="{{ "favicon-32.png" | relURL }}" sizes="32x32" type="image/png">
   <link rel="apple-touch-icon" href="{{ "apple-touch-icon.png" | relURL }}">
+  <script>
+    /* Directional view transitions: compare the page we're leaving with the one
+       we're entering, and tag <html> so the stylesheet can slide content the
+       right way (deeper = in from the right, back = in from the left). Same-page
+       navigation skips the animation entirely. No-ops in browsers without
+       cross-document transitions. */
+    (function () {
+      var norm = function (path) {
+        return path.replace(/\/+$/, "") || "/";
+      };
+      var depth = function (path) {
+        return norm(path).split("/").filter(Boolean).length;
+      };
+      addEventListener("pageswap", function (e) {
+        if (e.viewTransition) {
+          sessionStorage.setItem("vt-from", location.pathname);
+        }
+      });
+      addEventListener("pagereveal", function (e) {
+        if (!e.viewTransition) return;
+        var from = sessionStorage.getItem("vt-from");
+        var to = location.pathname;
+        // Same page (e.g. clicking the header while already here): no animation.
+        if (from !== null && norm(from) === norm(to)) {
+          e.viewTransition.skipTransition();
+          return;
+        }
+        var dir = "none";
+        if (from !== null) {
+          var a = depth(from), b = depth(to);
+          dir = b > a ? "forward" : b < a ? "back" : "none";
+        }
+        document.documentElement.dataset.vtDirection = dir;
+        e.viewTransition.finished.finally(function () {
+          delete document.documentElement.dataset.vtDirection;
+        });
+      });
+    })();
+  </script>
 </head>
 <body>
   <a class="skip" href="#main">skip to content</a>

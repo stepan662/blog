@@ -258,3 +258,68 @@ th, td {
   .banner pre { font-size: .7rem; }
   .post-list li { flex-direction: column; gap: 0; }
 }
+
+/* ---- view transitions ---- */
+/* Native cross-document transitions. A small script in baseof.html compares the
+   URL depth of the two pages and tags <html data-vt-direction>, hinting at
+   hierarchy: going deeper, content enters from the right; coming back, from the
+   left; same-level navigation is a neutral fade; reloading the same page skips
+   animation entirely. Pure progressive enhancement — unsupported browsers just
+   navigate normally, and reduced-motion users get no animation. */
+@view-transition {
+  navigation: auto;
+}
+
+/* Anchor the header and footer as persistent chrome so only the content area
+   slides. Each glides to its correct position — holding still when unchanged
+   (the header, always at the top), sliding up/down as page length changes (the
+   footer) — while its contents cross-fade, so the footer's sometimes-present
+   rss link and the header's active nav link fade in and out cleanly. */
+.site-header { view-transition-name: site-header; }
+.site-footer { view-transition-name: site-footer; }
+
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-group(site-header),
+  ::view-transition-group(site-footer) {
+    animation-duration: 240ms;
+    animation-timing-function: cubic-bezier(.2, 0, 0, 1);
+  }
+
+  /* Same-level navigation: gentle fade + slight upward drift. */
+  ::view-transition-old(root) { animation: vt-out 160ms ease both; }
+  ::view-transition-new(root) { animation: vt-in  240ms cubic-bezier(.2, 0, 0, 1) both; }
+
+  /* Going deeper: content slides in from the right, old exits left. */
+  :root[data-vt-direction="forward"]::view-transition-old(root) {
+    animation: vt-exit-left 220ms cubic-bezier(.2, 0, 0, 1) both;
+  }
+  :root[data-vt-direction="forward"]::view-transition-new(root) {
+    animation: vt-enter-right 220ms cubic-bezier(.2, 0, 0, 1) both;
+  }
+
+  /* Coming back up: mirror direction. */
+  :root[data-vt-direction="back"]::view-transition-old(root) {
+    animation: vt-exit-right 220ms cubic-bezier(.2, 0, 0, 1) both;
+  }
+  :root[data-vt-direction="back"]::view-transition-new(root) {
+    animation: vt-enter-left 220ms cubic-bezier(.2, 0, 0, 1) both;
+  }
+}
+
+@keyframes vt-out { to   { opacity: 0; } }
+@keyframes vt-in  { from { opacity: 0; transform: translateY(6px); } }
+
+@keyframes vt-enter-right { from { opacity: 0; transform: translateX(24px); } }
+@keyframes vt-exit-left   { to   { opacity: 0; transform: translateX(-24px); } }
+@keyframes vt-enter-left  { from { opacity: 0; transform: translateX(-24px); } }
+@keyframes vt-exit-right  { to   { opacity: 0; transform: translateX(24px); } }
+
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(root),
+  ::view-transition-old(root),
+  ::view-transition-new(root),
+  ::view-transition-group(site-header),
+  ::view-transition-group(site-footer) {
+    animation: none !important;
+  }
+}
