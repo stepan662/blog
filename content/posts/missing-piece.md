@@ -12,7 +12,7 @@ So naturally, the next thing I did was build a React library. Before you close t
 
 I'm a strong advocate of local state with specialized tools for specific tasks — react-query or SWR for data fetching, formik or react-hook-form for forms, and so on. For maybe 80% of the cases this works perfectly: simple forms, views with a few buttons, no problem.
 
-But honestly, the remaining 20% often get ugly. In some parts of the app a centralized state simply **is** the better way. You might have some really complicated form, editor or some complex piece where everything is somehow connected to everything and you need to controll it from one place.
+But honestly, the remaining 20% often get ugly. In some parts of the app a centralized state simply **is** the better way. You might have some really complicated form, editor or some complex piece where everything is somehow connected to everything and you need to control it from one place.
 
 ## Existing solutions
 
@@ -36,7 +36,7 @@ The most obvious issue of the React Context API is the fact that it can only pro
 
 Libraries like redux or zustand allow us to select only the part we want, and then our component re-renders only if the required piece of the state changed.
 
-The trick to fix this is actually quite simple, we can create a ref, and hide the state into the `value.current` mutable property. Then we can use well known mechanism from redux - selectors.
+The trick to fix this is actually quite simple: we create a ref and hide the state in its `value.current` mutable property. Then we can use a well-known mechanism from redux — selectors.
 
 ```ts
 const items = useContextSelector(Context, c => c.items)
@@ -64,7 +64,7 @@ function Parent() {
 }
 ```
 
-It's easy to use context like this, but there is a huge performance problem. Because we are keeping the component which is parent to the whole subtree, when it re-renders all the children re-render as well (unless they use React.memo). Even components which are not using the context at all will get re-rendered, because it's not actually the context, which is causing this, it's the parent child structure.
+It's easy to use context like this, but there is a huge performance problem. Because the component sits above the whole subtree, whenever it re-renders all of its children re-render as well (unless they use React.memo). Even components that don't use the context at all get re-rendered — it's not actually the context causing this, it's the parent-child structure.
 
 We need to do a subtle change, to prevent this:
 
@@ -175,9 +175,9 @@ function SubmitButton() {
 }
 ```
 
-The body of `createProvider` is a callback, which is basically the body of a regular React component (so you can use hooks), only you have to return an object with `actions` and `state` fields (names are not arbitrary). The library will build the Provider with context for you and also give you two hooks - one for subscribing to the state and other for the actions.
+The body of `createProvider` is a callback, which is basically the body of a regular React component (so you can use hooks). The one rule is that it must return an object with exactly two fields, named `state` and `actions`. Those names aren't arbitrary — the library looks them up by name, so you can't rename them or swap them around. Everything under `state` is what components subscribe to; everything under `actions` is the functions that change it. From that one callback the library builds the Provider for you and hands back two hooks — one for subscribing to the state, one for reading the actions.
 
-Actions are kept separate so the library can make them stable with the ref trick from earlier — same shape you passed in, no magic, just an optimization.
+Actions are kept in their own field so the library can make them stable with the ref trick from earlier — same shape you passed in, no magic, just an optimization. And because everything is inferred from what you return, the types for your state and actions come for free — no manual typing like you'd need with a native React Context.
 
 ## Performance
 
@@ -185,14 +185,9 @@ The library gives you the tools to keep things fast, but it won't do the thinkin
 
 Used carefully, you get really good performance without ugly workarounds. In the example above the `SubmitButton` never re-renders while you type — it only uses actions, which are stable, so it has no reason to. And that's how it makes sense to me: it's not using the value, so why would it re-render when the value changes?
 
-
-## TypeScript
-
-The types for your state and actions are inferred automatically — you don't have to specify them manually like with a native React Context.
-
 ## I offer, I don't impose
 
-I think every solution has pros and cons, but this is what worked for me and the library was used internally in my last job, I've just polished it and gave it a name. We've used it on a pretty large project and we only needed about 4 separate contexts, for the whole app - in other cases we used local state in combination with react-query and formik.
+I think every solution has pros and cons, but this is what worked for me. The library was used internally at my last job; I've just polished it and given it a name. We used it on a pretty large project and needed only about 4 separate contexts for the whole app — everywhere else we used local state in combination with react-query and formik.
 
 Because the library is quite simple, it only has about 1.2KB over the wire (and half of it is polyfill for React < 18).
 
