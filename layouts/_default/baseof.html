@@ -17,62 +17,57 @@
   <link rel="icon" href="{{ "favicon-32.png" | relURL }}" sizes="32x32" type="image/png">
   <link rel="apple-touch-icon" href="{{ "apple-touch-icon.png" | relURL }}">
   <script>
-    /* Directional view transitions: compare the page we're leaving with the one
-       we're entering, and tag <html> so the stylesheet can slide content the
-       right way (deeper = in from the right, back = in from the left).
-       Re-navigating to the current page tags it "scroll" instead, so the whole
-       viewport is captured as one image and glides from the old scroll position
-       to the new. No-ops in browsers without cross-document transitions. */
+    /* Cross-document view transitions. Each transition's flavour is chosen by
+       tagging <html data-vt-direction> before a snapshot is captured, so the
+       stylesheet can partition and animate the page to match: going deeper,
+       content enters from the right; coming back, from the left; re-navigating to
+       the page we're already on becomes "scroll" — the whole viewport is captured
+       as one image that glides from the old scroll position to the new.
+
+       Every decision needs one fact: which page we came from. We keep it in
+       sessionStorage — each page leaves its path for the next to read — which is
+       trivial and works in every engine, unlike the Navigation API (absent in
+       Safari). No-ops without cross-document transitions. */
     (function () {
+      var root = document.documentElement;
       var norm = function (path) {
         return path.replace(/\/+$/, "") || "/";
       };
       var depth = function (path) {
         return norm(path).split("/").filter(Boolean).length;
       };
-      // The page we're navigating away from and the one we're arriving at, read
-      // from the Navigation API — no state stashed between documents.
-      var fromURL = function (act) {
-        return act && act.from ? new URL(act.from.url).pathname : null;
-      };
-      addEventListener("pageswap", function (e) {
-        if (!e.viewTransition) return;
-        // Heading back to the page we're already on? Tag the outgoing document
-        // so the header, footer, and content shed their transition-names and get
-        // captured as one whole-viewport image. The incoming document does the
-        // same in pagereveal, so both snapshots agree and slide as a single unit.
-        var dest = e.activation && e.activation.entry && e.activation.entry.url;
-        if (dest && norm(new URL(dest).pathname) === norm(location.pathname)) {
-          document.documentElement.dataset.vtDirection = "scroll";
-        }
-      });
-      addEventListener("pagereveal", function (e) {
-        if (!e.viewTransition) return;
-        var root = document.documentElement;
-        var from = fromURL(window.navigation && navigation.activation);
-        var to = location.pathname;
-        /* Re-navigating to the page we're already on (clicking the header banner
-           or an active nav link): identical content at a different scroll offset.
-           The whole viewport was captured as one image (see the .wrap naming in
-           the stylesheet), so the browser slides it from the old scroll position
-           to the new on its own — no cross-fade, no scroll math. Same scroll (a
-           plain reload) just means zero travel: nothing visibly moves. */
-        if (from !== null && norm(from) === norm(to)) {
+
+      /* Incoming: compare where we came from with where we are, and tag the page
+         before its snapshot is taken. Then leave our own path for whoever's next. */
+      var from = sessionStorage.getItem("vt-from");
+      if (from !== null) {
+        if (norm(from) === norm(location.pathname)) {
           root.dataset.vtDirection = "scroll";
-          e.viewTransition.finished.finally(function () {
-            delete root.dataset.vtDirection;
-          });
-          return;
+        } else {
+          var d = depth(location.pathname) - depth(from);
+          root.dataset.vtDirection = d > 0 ? "forward" : d < 0 ? "back" : "none";
         }
-        var dir = "none";
-        if (from !== null) {
-          var a = depth(from), b = depth(to);
-          dir = b > a ? "forward" : b < a ? "back" : "none";
-        }
-        root.dataset.vtDirection = dir;
-        e.viewTransition.finished.finally(function () {
+      }
+      sessionStorage.setItem("vt-from", location.pathname);
+
+      /* Outgoing: a same-URL navigation is the one case the incoming tag can't set
+         in time — the old page must be tagged "scroll" before *it* is captured. A
+         click reveals the destination early enough; passive, so the navigation (and
+         any reload) still happens. Anything else clears the tag for the default
+         partition. In-page anchors and new-tab/download clicks don't replace this
+         document, so leave them be. */
+      addEventListener("click", function (e) {
+        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
+        var a = e.target.closest && e.target.closest("a[href]");
+        if (!a || a.target === "_blank" || a.hasAttribute("download")) return;
+        var u;
+        try { u = new URL(a.href, location.href); } catch (err) { return; }
+        if (u.origin !== location.origin || u.hash) return;
+        if (norm(u.pathname) === norm(location.pathname)) {
+          root.dataset.vtDirection = "scroll";
+        } else {
           delete root.dataset.vtDirection;
-        });
+        }
       });
     })();
   </script>

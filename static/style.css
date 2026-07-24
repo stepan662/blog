@@ -263,11 +263,24 @@ th, td {
 /* Native cross-document transitions. A small script in baseof.html compares the
    URL depth of the two pages and tags <html data-vt-direction>, hinting at
    hierarchy: going deeper, content enters from the right; coming back, from the
-   left; same-level navigation is a neutral fade; reloading the same page skips
-   animation entirely. Pure progressive enhancement — unsupported browsers just
-   navigate normally, and reduced-motion users get no animation. */
+   left; same-level navigation is a neutral fade; re-navigating to the current
+   page slides the whole viewport by the scroll offset. Pure progressive
+   enhancement — unsupported browsers just navigate normally, and reduced-motion
+   users get no animation. */
 @view-transition {
   navigation: auto;
+}
+
+/* A spring, expressed as a linear() easing curve: it accelerates, overshoots the
+   target by ~5%, then settles back — so motion arrives with a little momentum and
+   bounce instead of a mechanical ease-out stop. The overshoot is a percentage of
+   the distance travelled, so a long throw bounces more than a short one, the way
+   real physics does. Sampled from an underdamped spring (damping ratio ~0.7). */
+:root {
+  --ease-spring: linear(
+    0, 0.115 5%, 0.352 10%, 0.593 15%, 0.789 20%, 0.924 25%,
+    1.001 30%, 1.046 40%, 1.030 50%, 1.010 60%, 1.000 70%, 0.998 80%, 1
+  );
 }
 
 /* Anchor the header and footer as persistent chrome so only the content area
@@ -319,10 +332,12 @@ th, td {
 
   /* Same-page scroll: the whole viewport is one image (the .wrap page), so the
      browser's default group animation already slides it from the old scroll
-     offset to the new — we just match its timing to the header/footer glide. */
+     offset to the new. Drive it with the spring so the page settles in with a
+     little bounce — the taller the scroll jump, the more it overshoots. The
+     extra duration gives the settle room to read as a spring rather than a jolt. */
   ::view-transition-group(page) {
-    animation-duration: 240ms;
-    animation-timing-function: cubic-bezier(.2, 0, 0, 1);
+    animation-duration: 420ms;
+    animation-timing-function: var(--ease-spring);
   }
 }
 
