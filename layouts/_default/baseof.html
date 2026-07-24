@@ -34,6 +34,19 @@
       var norm = function (path) {
         return path.replace(/#.*$/, "").replace(/\/+$/, "") || "/";
       };
+      /* Is the element fully above or below the viewport? Its view-transition
+         snapshot is captured in viewport coordinates, so when it sits off-screen
+         its box is a whole scroll-length from where it rests on the other page —
+         the gap whose morph we want to bound. Missing element (head runs before
+         the body is parsed) counts as on-screen; the pagereveal pass re-measures
+         once the layout exists. */
+      var offscreen = function (sel) {
+        var el = document.querySelector(sel);
+        if (!el) return false;
+        var r = el.getBoundingClientRect();
+        if (!r.height) return false;   // not laid out yet / hidden — don't bound
+        return r.bottom <= 0 || r.top >= innerHeight;
+      };
 
       /* Tag the page — before its snapshot is taken — from a single lexicographic
          comparison of where we came from and where we are. It covers every case
@@ -47,6 +60,39 @@
         if (from === null) return;
         var a = norm(from), b = norm(location.pathname);
         root.dataset.vtDirection = a === b ? "scroll" : b > a ? "forward" : "back";
+
+        /* Bound the chrome's travel. The header/footer morph from their captured
+           box on the old page to their box here; captured in viewport
+           coordinates, that gap is a whole scroll-length whenever the chrome sat
+           off-screen — and crossing it in a fixed 240ms reads as a fast fly. Tag
+           each with the side that was off-screen so the stylesheet can keep the
+           on-screen side at its own spot and give it a short slide, and take the
+           off-screen (never-visible) side out of the morph:
+
+             "exit"  — the destination side is off-screen (opening a long page
+                       where the chrome falls below the fold). The stylesheet
+                       drops the name here so the outgoing snapshot has nothing to
+                       pair with on the far page: it stays put as an exiting group
+                       and slides out in place, instead of being dragged off to
+                       that far box.
+             "enter" — only the old side was off-screen (coming back onto a page
+                       where the chrome rests). Pin the group at that resting spot,
+                       drop the old snapshot, slide the new one in.
+
+           On-screen at both ends stays untagged and keeps the morph. The old side
+           comes from the flag the previous page stored; the destination side we
+           measure live (valid on the pagereveal pass, once this page's layout
+           exists — the inline pass runs before the body is parsed and just sees
+           on-screen). Cleared when near, since a bfcache-restored document is
+           reused and must not keep a stale tag. */
+        var bound = function (attr, key, sel) {
+          var oldOff = !!sessionStorage.getItem(key), newOff = offscreen(sel);
+          var state = newOff ? "exit" : oldOff ? "enter" : "";
+          if (state) root.dataset[attr] = state;
+          else delete root.dataset[attr];
+        };
+        bound("vtHeader", "vt-header-off", ".site-header");
+        bound("vtFooter", "vt-footer-off", ".site-footer");
       };
       // Run it on a normal load (inline, before the snapshot, in every engine) and
       // again on pagereveal — which also fires when a page is shown from the
@@ -60,6 +106,11 @@
          cache, keeping "where we came from" correct across history navigation. */
       addEventListener("pagehide", function () {
         sessionStorage.setItem("vt-from", location.pathname);
+        /* Record whether the chrome is off-screen as we leave, so the next page
+           can read it as the "old side" of its bound() decision above. Measured
+           here alongside the path for the same bfcache reason. */
+        sessionStorage.setItem("vt-header-off", offscreen(".site-header") ? "1" : "");
+        sessionStorage.setItem("vt-footer-off", offscreen(".site-footer") ? "1" : "");
       });
 
       /* Outgoing: a same-URL navigation is the one case the incoming tag can't set

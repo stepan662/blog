@@ -303,6 +303,14 @@ th, td {
 :root[data-vt-direction="scroll"] .site-footer { view-transition-name: none; }
 :root[data-vt-direction="scroll"] .wrap { view-transition-name: page; }
 
+/* Opening a page where the chrome falls below the fold (tagged "exit" from JS at
+   pagereveal, before this page's snapshot). Drop its name here so it isn't paired
+   with its far-off box on this page — with no new box to morph toward, the
+   outgoing snapshot stays an exiting group at its own position and slides out in
+   place (see the "exit" rules below), instead of being flung to the far box. */
+:root[data-vt-header="exit"] .site-header { view-transition-name: none; }
+:root[data-vt-footer="exit"] .site-footer { view-transition-name: none; }
+
 @media (prefers-reduced-motion: no-preference) {
   ::view-transition-group(site-header),
   ::view-transition-group(site-footer) {
@@ -339,6 +347,31 @@ th, td {
     animation-duration: 420ms;
     animation-timing-function: var(--ease-spring);
   }
+
+  /* Bounded chrome. A named header/footer morphs from its captured box on the
+     page we left to its box here — but captured in viewport coordinates, that box
+     is a whole scroll-length away whenever the chrome sat off-screen, and crossing
+     the gap in 240ms reads as a fast fly. JS tags each with the side that was
+     off-screen so the on-screen side stays at its own spot and only slides a
+     touch. Untagged (on-screen both ends) keeps the geometric morph above. */
+
+  /* enter — arriving where the chrome rests, from a page where it was off-screen.
+     Pin the group at that resting spot so nothing travels the gap, drop the
+     never-seen old snapshot, and slide the new one in from the near edge. */
+  :root[data-vt-header="enter"]::view-transition-group(site-header),
+  :root[data-vt-footer="enter"]::view-transition-group(site-footer) { animation: none; }
+  :root[data-vt-header="enter"]::view-transition-old(site-header),
+  :root[data-vt-footer="enter"]::view-transition-old(site-footer) { animation: none; opacity: 0; }
+  :root[data-vt-header="enter"]::view-transition-new(site-header) { animation: vt-chrome-down-in 240ms cubic-bezier(.2, 0, 0, 1) both; }
+  :root[data-vt-footer="enter"]::view-transition-new(site-footer) { animation: vt-chrome-up-in   240ms cubic-bezier(.2, 0, 0, 1) both; }
+
+  /* exit — leaving for a page where the chrome falls off-screen. Its name was
+     dropped on that page (above), so the outgoing snapshot is an exiting group at
+     its own on-screen position rather than a morph toward the far box: slide it
+     out a touch from where it sits and let it fade. No group pin — the exiting
+     group already holds the old position, and there is no new snapshot to hide. */
+  :root[data-vt-header="exit"]::view-transition-old(site-header) { animation: vt-chrome-up-out   240ms cubic-bezier(.2, 0, 0, 1) both; }
+  :root[data-vt-footer="exit"]::view-transition-old(site-footer) { animation: vt-chrome-down-out 240ms cubic-bezier(.2, 0, 0, 1) both; }
 }
 
 @keyframes vt-out { to   { opacity: 0; } }
@@ -348,6 +381,15 @@ th, td {
 @keyframes vt-exit-left   { to   { opacity: 0; transform: translateX(-24px); } }
 @keyframes vt-enter-left  { from { opacity: 0; transform: translateX(-24px); } }
 @keyframes vt-exit-right  { to   { opacity: 0; transform: translateX(24px); } }
+
+/* Bounded chrome: a short slide from the near edge instead of the long morph
+   across the captured gap. Enter — the arriving header drops down from just
+   above, the footer rises up from just below; exit mirrors it. The off-screen
+   snapshot on the other side is hidden, not animated. */
+@keyframes vt-chrome-down-in  { from { opacity: 0; transform: translateY(-16px); } }
+@keyframes vt-chrome-up-in    { from { opacity: 0; transform: translateY( 16px); } }
+@keyframes vt-chrome-up-out    { to  { opacity: 0; transform: translateY(-16px); } }
+@keyframes vt-chrome-down-out  { to  { opacity: 0; transform: translateY( 16px); } }
 
 @media (prefers-reduced-motion: reduce) {
   ::view-transition-group(root),
