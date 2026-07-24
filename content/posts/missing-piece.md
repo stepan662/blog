@@ -1,26 +1,24 @@
 ---
-title: "My missing piece for React"
+title: "React doesn't need a state management tool, I said. Then I built one."
 date: 2026-06-26
 draft: true
 ---
 
-For years, I've tried to avoid creating a React library, there are already libraries for everything and new libraries just create decision paralysis. In the end I've ended up creating one anyway. But give me a chance, I might have some redeeming facts in my defence.
+A while back I wrote an article with a title I stand behind to this day: [React doesn't need a state management tool](https://dev.to/tolgee_i18n/react-doesnt-need-state-management-tool-i-said-31l4). There's already a library for everything, and each new one just adds another decision to an exhausting pile.
 
-I was always a fan of React's API being minimal and its narrow focus — I think that's the hidden secret that made it so successful. So like many others, I've spent years exploring the libraries that plug into it, and fighting with the most important one: state management.
+So naturally, the next thing I did was build a React library. Before you close the tab — give me a chance. I think I have a decent excuse, and it doesn't actually contradict a word of that article.
 
-I became a strong advocate of local state with specialized tools for specific tasks — react-query or SWR for data fetching, formik or react-hook-form for forms, and so on. For maybe 80% of the cases this works perfectly: simple forms, views with a few buttons, no problem.
+## The other 20%
 
-But the other 20% always got ugly. In some parts of the app a centralized state is just necessary — a super complicated custom form, or something performance-sensitive like an infinite scroll list. When everything is connected to everything, isolated states aren't the solution.
+I'm a strong advocate of local state with specialized tools for specific tasks — react-query or SWR for data fetching, formik or react-hook-form for forms, and so on. For maybe 80% of the cases this works perfectly: simple forms, views with a few buttons, no problem.
+
+But honestly, the remaining 20% often get ugly. In some parts of the app a centralized state simply **is** the better way. You might have some really complicated form, editor or some complex piece where everything is somehow connected to everything and you need to controll it from one place.
 
 ## Existing solutions
 
-The advice I found was to use some lightweight state management library like zustand to create small shared states. You basically get a mini redux store, that you can use anywhere.
+The usual advice is to reach for a lightweight state manager like zustand — a mini redux store you can use anywhere. But I think that misses the point. formik, react-query, zustand — they're all *sources* of state, and I usually already have several: some data is fetched, some lives in formik, some is my own custom state. I don't want to add another source; I want to *combine* the ones I have into a single piece, and let components use it regardless of where it came from.
 
-But I think this actually misses the point a bit. Libraries like formik or react-query are sources of state and zustand is a source of state as well. I usually need to combine data from multiple sources, some data are fetched, some are in formik and some are my custom state. I would like to combine them into one piece and let the components use this state regardless of where it's coming from.
-
-If you want to do this with zustand you usually end up copying the state, so everything is in zustand, but then we don't have a single source of truth and because zustand lives outside the React lifecycle, it's easy to forget about cleaning the state on unmount and so on.
-
-You might also reach for something like Jotai — a great library that gets much closer. With derived atoms and `atomWithQuery` you really can combine fetched data with local state. But notice what happened to get there: everything had to become an atom. Jotai is still a state *source* — a new primitive you build on top of. What I wanted was different: not another place to keep state, but a way to *combine* the state I already have.
+With zustand you get there by copying everything into the store — but then it's no longer the single source of truth, and since it lives outside React's lifecycle, it's easy to forget to clean up on unmount. Jotai gets much closer: with derived atoms and `atomWithQuery` you really can combine fetched and local state. But notice what it took — everything had to become an atom. Jotai is still a state *source*, a new primitive you build on top of. What I wanted was different: not another place to keep state, but a way to *combine* the state I already have.
 
 ## What is actually missing?
 
@@ -32,7 +30,7 @@ There's just one problem, and it's a big one: performance. Context forces every 
 
 But imagine we could keep everything good about context and lose the re-renders. That's exactly what react-arven is for. The name is a bit mystical, but the idea is simple — and it falls out of three specific problems with Context, so let me walk through them.
 
-### 1. No ability to select data
+### 1. The ability to select data
 
 The most obvious issue of the React Context API is the fact that it can only provide a single value, and whenever that value changes, it forces all subscribers to re-render.
 
@@ -48,7 +46,7 @@ Simple, powerful.
 
 To be fair, none of this is new. dai-shi's [`use-context-selector`](https://github.com/dai-shi/use-context-selector) popularized exactly this pattern, and since React 18 the primitive ships built-in — `useSyncExternalStore` lets a component subscribe to an external store through a selector.
 
-### 2. Parent re-render
+### 2. Preventing parent causing re-render
 
 This is a hidden foot-gun, let me show an example.
 
@@ -98,7 +96,7 @@ How is this different? In React, when you pass children as a prop, the wrapper c
 In the picture the edges represent the render hierarchy. And notice that CountProvider is not a parent of TreeOfChildren, but still can provide context to them. It's basically only saying where to render, but isn't rendering itself. So if we change the state, it's acting like a leaf node in this structure.
 
 
-### 3. Unstable actions
+### 3. Stable actions
 
 If you create custom actions (functions mutating the state), they will be unstable values in the context. Let me illustrate the issue:
 
