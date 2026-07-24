@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg width="100%" height="100%" viewBox="0 0 1295 906" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" xml:space="preserve" xmlns:serif="http://www.serif.com/" style="fill-rule:evenodd;clip-rule:evenodd;stroke-linecap:round;stroke-miterlimit:7;">
+    <g id="Artboard1" transform="matrix(1,0,0,1,-68,-242)" style="fill:rgb(214,214,214);">
+        <rect x="68" y="242" width="1295" height="906" style="fill:rgb(18,18,18);"/>
+        <g transform="matrix(1,0,0,0.841355,144.022657,93.457168)">
+            <path d="M341.045,1007L53,1007L155.085,481.937L238.96,481.937L341.045,1007Z" style="fill:rgb(90,90,90);"/>
+        </g>
+        <g transform="matrix(1,0,0,0.714584,828.993588,280.115409)">
+            <path d="M341.045,1007L53,1007L159.252,481.937L234.794,481.937L341.045,1007Z" style="fill:rgb(90,90,90);"/>
+        </g>
+        <g>
+            <clipPath id="_clip1">
+                <rect x="982.868" y="644" width="51.89" height="58.201"/>
+            </clipPath>
+            <g clip-path="url(#_clip1)">
+                <path d="M998,514C991.983,522.244 979.949,538.732 983.516,551.719C985.577,559.221 992.737,567.808 1000.694,577.184C1010.767,589.054 1022.116,602.19 1026.016,616C1033.1,641.08 1028.377,681.828 1026.016,702.201" style="fill:none;stroke:rgb(214,214,214);stroke-width:6.25px;"/>
+            </g>
+        </g>
+        <g transform="matrix(1,0,0,1,3.545315,7.437366)">
+            <circle cx="337.5" cy="474.5" r="42.5" style="fill:rgb(52,52,52);stroke:rgb(214,214,214);stroke-width:6.25px;stroke-linejoin:round;stroke-miterlimit:1.5;"/>
+        </g>
+        <path d="M1057.016,514C1064.5,521.986 1079.467,537.958 1080.301,549C1081.134,560.042 1068.389,573.514 1062.016,580.25" style="fill:none;stroke:rgb(214,214,214);stroke-width:6.25px;"/>
+        <g transform="matrix(1,0,0,1,3.545315,199.475866)">
+            <circle cx="337.5" cy="474.5" r="42.5" style="fill:rgb(52,52,52);stroke:rgb(214,214,214);stroke-width:6.25px;stroke-linejoin:round;stroke-miterlimit:1.5;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,-63.75,396)">
+            <circle cx="337.5" cy="474.5" r="42.5" style="fill:rgb(52,52,52);stroke:rgb(214,214,214);stroke-width:6.25px;stroke-linejoin:round;stroke-miterlimit:1.5;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,63.75,396)">
+            <circle cx="337.5" cy="474.5" r="42.5" style="fill:rgb(52,52,52);stroke:rgb(214,214,214);stroke-width:6.25px;stroke-linejoin:round;stroke-miterlimit:1.5;"/>
+        </g>
+        <g transform="matrix(0.999771,0.021407,-0.021407,0.999771,12.450387,-7.168268)">
+            <path d="M339.9,524.45L342.191,631.464" style="fill:none;stroke:rgb(214,214,214);stroke-width:6.25px;stroke-linejoin:round;stroke-miterlimit:1.5;"/>
+        </g>
+        <path d="M322.698,716.237L290.246,832.239" style="fill:none;stroke:rgb(214,214,214);stroke-width:6.25px;stroke-linejoin:round;stroke-miterlimit:1.5;"/>
+        <path d="M358.701,718.271L391.359,830.427" style="fill:none;stroke:rgb(214,214,214);stroke-width:6.25px;stroke-linejoin:round;stroke-miterlimit:1.5;"/>
+        <g transform="matrix(1,0,0,1,-159.36727,-130.284359)">
+            <g transform="matrix(1,0,0,1,558.372,606.165)">
+                <text x="0px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:25px;">Parent providing</text>
+            </g>
+            <g transform="matrix(1,0,0,1,558.372,634.913)">
+                <text x="0px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:25px;">context directly</text>
+            </g>
+        </g>
+        <g transform="matrix(1,0,0,1,101.401635,44)">
+            <g transform="matrix(1,0,0,1,157.964,339.414)">
+                <text x="0px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:25px;">Direct structure</text>
+            </g>
+        </g>
+        <g transform="matrix(1,0,0,1,624.082651,466.201205)">
+            <circle cx="337.5" cy="474.5" r="42.5" style="fill:rgb(52,52,52);stroke:rgb(214,214,214);stroke-width:6.25px;stroke-linejoin:round;stroke-miterlimit:1.5;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,751.582651,466.201205)">
+            <circle cx="337.5" cy="474.5" r="42.5" style="fill:rgb(52,52,52);stroke:rgb(214,214,214);stroke-width:6.25px;stroke-linejoin:round;stroke-miterlimit:1.5;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,687.832651,70.201205)">
+            <path d="M322.698,716.237L290.246,832.239" style="fill:none;stroke:rgb(214,214,214);stroke-width:6.25px;stroke-linejoin:round;stroke-miterlimit:1.5;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,687.832651,70.201205)">
+            <path d="M358.701,718.271L391.359,830.427" style="fill:none;stroke:rgb(214,214,214);stroke-width:6.25px;stroke-linejoin:round;stroke-miterlimit:1.5;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,687.832651,6.475866)">
+            <circle cx="337.5" cy="474.5" r="42.5" style="fill:rgb(52,52,52);stroke:rgb(214,214,214);stroke-width:6.25px;stroke-linejoin:round;stroke-miterlimit:1.5;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,688.516245,270.201205)">
+            <circle cx="337.5" cy="474.5" r="42.5" style="fill:rgb(52,52,52);stroke:rgb(214,214,214);stroke-width:6.25px;stroke-linejoin:round;stroke-miterlimit:1.5;"/>
+        </g>
+        <g transform="matrix(0.625,0,0,0.625,608.457651,196.5)">
+            <path d="M667,580C704.53,580 735,610.47 735,648C735,685.53 704.53,716 667,716C629.47,716 599,685.53 599,648C599,610.47 629.47,580 667,580ZM667,614C685.765,614 701,629.235 701,648C701,666.765 685.765,682 667,682C648.235,682 633,666.765 633,648C633,629.235 648.235,614 667,614Z" style="fill:rgb(52,52,52);stroke:rgb(214,214,214);stroke-width:6.67px;"/>
+        </g>
+        <g transform="matrix(1,0,0,1,537.699136,-116.387949)">
+            <g transform="matrix(1,0,0,1,558.372,606.165)">
+                <text x="0px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:25px;">Parent</text>
+            </g>
+        </g>
+        <g transform="matrix(1,0,0,1,-30.151111,11.323)">
+            <g transform="matrix(1,0,0,1,1109.207,607.217)">
+                <text x="0px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:25px;">CountProvider</text>
+            </g>
+        </g>
+        <g transform="matrix(1,0,0,1,743.887515,44.305176)">
+            <g transform="matrix(1,0,0,1,157.964,339.414)">
+                <text x="0px" y="0px" style="font-family:'ArialMT', 'Arial', sans-serif;font-size:25px;">Separate component</text>
+            </g>
+        </g>
+        <g>
+            <clipPath id="_clip2">
+                <rect x="976.868" y="514" width="54.89" height="110.5"/>
+            </clipPath>
+            <g clip-path="url(#_clip2)">
+                <path d="M998,514C991.983,522.244 979.949,538.732 983.516,551.719C985.577,559.221 992.737,567.808 1000.694,577.184C1010.767,589.054 1022.116,602.19 1026.016,616C1033.1,641.08 1028.377,681.828 1026.016,702.201" style="fill:none;stroke:rgb(214,214,214);stroke-width:6.25px;"/>
+            </g>
+        </g>
+    </g>
+</svg>

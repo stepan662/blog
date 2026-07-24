@@ -91,7 +91,10 @@ function Parent() {
 
 How is this different? In React, when you pass children as a prop, the wrapper can re-render without touching the children. It took a while to wrap my head around this concept, so I'll try to explain this with a diagram:
 
-![Trees comparison](/blog/react-arven/trees-comparison.svg)
+<picture>
+  <source srcset="/blog/react-arven/trees-comparison-dark.svg" media="(prefers-color-scheme: dark)">
+  <img src="/blog/react-arven/trees-comparison-light.svg" alt="Trees comparison">
+</picture>
 
 In the picture the edges represent the render hierarchy. And notice that CountProvider is not a parent of TreeOfChildren, but still can provide context to them. It's basically only saying where to render, but isn't rendering itself. So if we change the state, it's acting like a leaf node in this structure.
 
