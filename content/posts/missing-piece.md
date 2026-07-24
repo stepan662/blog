@@ -95,6 +95,8 @@ How is this different? In React, when you pass children as a prop, the wrapper c
 
 In the picture the edges represent the render hierarchy. And notice that CountProvider is not a parent of TreeOfChildren, but still can provide context to them. It's basically only saying where to render, but isn't rendering itself. So if we change the state, it's acting like a leaf node in this structure.
 
+If you want to go deeper on React re-renders in general, I dug into it in [Faster: optimizing a React app to the bone](https://dev.to/tolgee_i18n/faster-optimizing-react-app-to-the-bone-21kc).
+
 
 ### 3. Stable actions
 
@@ -176,6 +178,13 @@ function SubmitButton() {
 The body of `createProvider` is a callback, which is basically the body of a regular React component (so you can use hooks), only you have to return an object with `actions` and `state` fields (names are not arbitrary). The library will build the Provider with context for you and also give you two hooks - one for subscribing to the state and other for the actions.
 
 Actions are kept separate so the library can make them stable with the ref trick from earlier — same shape you passed in, no magic, just an optimization.
+
+## Performance
+
+The library gives you the tools to keep things fast, but it won't do the thinking for you. If you subscribe to a slice of state that changes on every keystroke, the component using it will re-render on every keystroke — that's the selector doing exactly what you asked. The skill is selecting only what you actually need.
+
+Used carefully, you get really good performance without ugly workarounds. In the example above the `SubmitButton` never re-renders while you type — it only uses actions, which are stable, so it has no reason to. And that's how it makes sense to me: it's not using the value, so why would it re-render when the value changes?
+
 
 ## TypeScript
 
