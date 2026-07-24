@@ -3,6 +3,12 @@
    ============================================================ */
 
 :root {
+  /* Declare both schemes so the browser paints its base canvas (and scrollbars,
+     form controls) to match the active theme. Without this the canvas defaults
+     to white, and it flashes through during cross-document navigation — most
+     visibly when the header re-navigates to the current page in dark mode. */
+  color-scheme: light dark;
+
   --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, Consolas,
           "Liberation Mono", "DejaVu Sans Mono", monospace;
   --measure: 80ch;

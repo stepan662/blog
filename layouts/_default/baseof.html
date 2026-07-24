@@ -113,20 +113,17 @@
         sessionStorage.setItem("vt-footer-off", offscreen(".site-footer") ? "1" : "");
       });
 
-      /* Outgoing: a same-URL navigation is the one case the incoming tag can't set
-         in time — the old page must be tagged "scroll" before *it* is captured. A
-         click reveals the destination early enough; passive, so the navigation (and
-         any reload) still happens. Anything else clears the tag for the default
-         partition. In-page anchors and new-tab/download clicks don't replace this
-         document, so leave them be. */
-      addEventListener("click", function (e) {
-        if (e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
-        var a = e.target.closest && e.target.closest("a[href]");
-        if (!a || a.target === "_blank" || a.hasAttribute("download")) return;
-        var u;
-        try { u = new URL(a.href, location.href); } catch (err) { return; }
-        if (u.origin !== location.origin || u.hash) return;
-        if (norm(u.pathname) === norm(location.pathname)) {
+      /* Outgoing: a same-URL re-navigation must be tagged "scroll" before this
+         page's snapshot is captured, so the whole viewport is grouped as one
+         image that glides from the old scroll offset to the new. pageswap is the
+         outgoing twin of pagereveal — it fires on this document at exactly that
+         moment and carries the resolved destination, so the tag lands in time.
+         Any other target falls back to the default partition; activation is null
+         on a cross-origin navigation, where no same-origin transition runs. */
+      addEventListener("pageswap", function (e) {
+        if (!e.viewTransition) return;
+        var dest = e.activation && e.activation.entry;
+        if (dest && norm(new URL(dest.url).pathname) === norm(location.pathname)) {
           root.dataset.vtDirection = "scroll";
         } else {
           delete root.dataset.vtDirection;
