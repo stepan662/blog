@@ -278,6 +278,18 @@ th, td {
 .site-header { view-transition-name: site-header; }
 .site-footer { view-transition-name: site-footer; }
 
+/* Re-navigating to the current page is different: the content is identical and
+   only the scroll offset moves, so there's no reason to treat the chrome as
+   separate. For that transition only (tagged data-vt-direction="scroll" on
+   <html> from JS, on both the outgoing and incoming document), drop the header
+   and footer names and give the whole .wrap a single name — the entire viewport
+   is captured as one image, and the browser slides it from the old scroll
+   position to the new automatically, the same way it repositions any named
+   element whose box has moved. No scroll math, nothing passed between pages. */
+:root[data-vt-direction="scroll"] .site-header,
+:root[data-vt-direction="scroll"] .site-footer { view-transition-name: none; }
+:root[data-vt-direction="scroll"] .wrap { view-transition-name: page; }
+
 @media (prefers-reduced-motion: no-preference) {
   ::view-transition-group(site-header),
   ::view-transition-group(site-footer) {
@@ -304,6 +316,14 @@ th, td {
   :root[data-vt-direction="back"]::view-transition-new(root) {
     animation: vt-enter-left 220ms cubic-bezier(.2, 0, 0, 1) both;
   }
+
+  /* Same-page scroll: the whole viewport is one image (the .wrap page), so the
+     browser's default group animation already slides it from the old scroll
+     offset to the new — we just match its timing to the header/footer glide. */
+  ::view-transition-group(page) {
+    animation-duration: 240ms;
+    animation-timing-function: cubic-bezier(.2, 0, 0, 1);
+  }
 }
 
 @keyframes vt-out { to   { opacity: 0; } }
@@ -319,7 +339,8 @@ th, td {
   ::view-transition-old(root),
   ::view-transition-new(root),
   ::view-transition-group(site-header),
-  ::view-transition-group(site-footer) {
+  ::view-transition-group(site-footer),
+  ::view-transition-group(page) {
     animation: none !important;
   }
 }

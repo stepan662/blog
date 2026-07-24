@@ -19,9 +19,10 @@
   <script>
     /* Directional view transitions: compare the page we're leaving with the one
        we're entering, and tag <html> so the stylesheet can slide content the
-       right way (deeper = in from the right, back = in from the left). Same-page
-       navigation skips the animation entirely. No-ops in browsers without
-       cross-document transitions. */
+       right way (deeper = in from the right, back = in from the left).
+       Re-navigating to the current page tags it "scroll" instead, so the whole
+       viewport is captured as one image and glides from the old scroll position
+       to the new. No-ops in browsers without cross-document transitions. */
     (function () {
       var norm = function (path) {
         return path.replace(/\/+$/, "") || "/";
@@ -29,18 +30,38 @@
       var depth = function (path) {
         return norm(path).split("/").filter(Boolean).length;
       };
+      // The page we're navigating away from and the one we're arriving at, read
+      // from the Navigation API — no state stashed between documents.
+      var fromURL = function (act) {
+        return act && act.from ? new URL(act.from.url).pathname : null;
+      };
       addEventListener("pageswap", function (e) {
-        if (e.viewTransition) {
-          sessionStorage.setItem("vt-from", location.pathname);
+        if (!e.viewTransition) return;
+        // Heading back to the page we're already on? Tag the outgoing document
+        // so the header, footer, and content shed their transition-names and get
+        // captured as one whole-viewport image. The incoming document does the
+        // same in pagereveal, so both snapshots agree and slide as a single unit.
+        var dest = e.activation && e.activation.entry && e.activation.entry.url;
+        if (dest && norm(new URL(dest).pathname) === norm(location.pathname)) {
+          document.documentElement.dataset.vtDirection = "scroll";
         }
       });
       addEventListener("pagereveal", function (e) {
         if (!e.viewTransition) return;
-        var from = sessionStorage.getItem("vt-from");
+        var root = document.documentElement;
+        var from = fromURL(window.navigation && navigation.activation);
         var to = location.pathname;
-        // Same page (e.g. clicking the header while already here): no animation.
+        /* Re-navigating to the page we're already on (clicking the header banner
+           or an active nav link): identical content at a different scroll offset.
+           The whole viewport was captured as one image (see the .wrap naming in
+           the stylesheet), so the browser slides it from the old scroll position
+           to the new on its own — no cross-fade, no scroll math. Same scroll (a
+           plain reload) just means zero travel: nothing visibly moves. */
         if (from !== null && norm(from) === norm(to)) {
-          e.viewTransition.skipTransition();
+          root.dataset.vtDirection = "scroll";
+          e.viewTransition.finished.finally(function () {
+            delete root.dataset.vtDirection;
+          });
           return;
         }
         var dir = "none";
@@ -48,9 +69,9 @@
           var a = depth(from), b = depth(to);
           dir = b > a ? "forward" : b < a ? "back" : "none";
         }
-        document.documentElement.dataset.vtDirection = dir;
+        root.dataset.vtDirection = dir;
         e.viewTransition.finished.finally(function () {
-          delete document.documentElement.dataset.vtDirection;
+          delete root.dataset.vtDirection;
         });
       });
     })();
