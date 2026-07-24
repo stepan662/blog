@@ -56,21 +56,76 @@ body {
 main { flex: 1 0 auto; }
 
 /* ---- links ---- */
-a { color: var(--accent); text-decoration: none; }
-a:hover { text-decoration: underline; }
-a:focus-visible {
-  outline: 2px solid var(--accent);
+/* The underline fades in on hover instead of snapping: the link carries it at
+   all times but transparent, so hovering only animates its colour in — no
+   reflow, and the resting/hover states look exactly as before, just smooth. The
+   link colour eases on the same curve (muted → accent in the nav, fg → accent
+   on the banner, etc). */
+a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: transparent;
+  outline: 2px solid transparent;
   outline-offset: 2px;
+  border-radius: 3px;
+  transition: color .18s ease, text-decoration-color .18s ease,
+              outline-color .18s ease;
+}
+a:hover { text-decoration-color: currentColor; }
+
+/* ---- focus: one ring for everything that can take focus ----
+   The ring rests on each element as a transparent outline so its colour can
+   fade both in and out — outline itself isn't animatable, but outline-color is,
+   and a bare :focus-visible rule would snap the ring on and off. Keyboard focus
+   only, so a mouse click never raises it; corners follow each element's own
+   border-radius to match the rounded code blocks. Links carry the ring through
+   the rule above; the other focusables — a scrollable <pre> (keyboard-focusable
+   in Chromium), plus any future button/summary — share it here so the whole
+   site draws one consistent ring instead of the browser's default. */
+pre, button, summary, [tabindex] {
+  outline: 2px solid transparent;
+  outline-offset: 2px;
+  transition: outline-color .18s ease;
+}
+a:focus-visible,
+pre:focus-visible,
+button:focus-visible,
+summary:focus-visible,
+[tabindex]:focus-visible { outline-color: var(--accent); }
+
+@media (prefers-reduced-motion: reduce) {
+  a, pre, button, summary, [tabindex] { transition: none; }
 }
 
+/* Skip link: hidden but focusable, and kept out of flow (position: absolute) at
+   all times, so revealing it overlays the top-left corner instead of shoving the
+   page down. A quiet chip that fades and slides in on focus rather than a bright
+   block dropping into the layout — subtle, though the accent focus ring still
+   makes clear it's live. */
 .skip {
   position: absolute;
-  left: -9999px;
+  top: .5rem;
+  left: .5rem;
+  z-index: 10;
+  padding: .2rem .55rem;
+  font-size: .8rem;
+  color: var(--fg);
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  text-decoration: none;
+  opacity: 0;
+  transform: translateY(-.4rem);
+  pointer-events: none;
+  transition: opacity .18s ease, transform .18s ease;
 }
 .skip:focus {
-  position: static;
-  display: inline-block;
-  margin-bottom: 1rem;
+  opacity: 1;
+  transform: none;
+  pointer-events: auto;
+}
+@media (prefers-reduced-motion: reduce) {
+  .skip { transition: none; }
 }
 
 .muted { color: var(--muted); }
@@ -81,8 +136,9 @@ a:focus-visible {
 .banner {
   display: inline-block;
   color: var(--fg);
+  text-decoration: none;
 }
-.banner:hover { text-decoration: none; color: var(--accent); }
+.banner:hover { color: var(--accent); }
 .banner pre {
   margin: 0;
   font-family: var(--mono);
@@ -113,7 +169,21 @@ h3 { font-size: 1rem; margin: 1.5rem 0 .5rem; }
 /* ---- home ---- */
 .home :first-child { margin-top: 0; }
 
-.recent { margin-top: 2.5rem; }
+.recent { margin-top: 1.5rem; }
+
+/* The '> whoami' markdown fence renders as a code box, so the generated
+   '> recent posts' prompt is dressed to match — same code-bg box, monospace
+   size and weight, rather than a bold heading. The dated list below reads as
+   the command's output; '> all posts' stays a plain link, like the nav. */
+.recent h2 {
+  margin: 0 0 1rem;
+  padding: 1rem;
+  background: var(--code-bg);
+  border-radius: 4px;
+  font-size: .85rem;
+  font-weight: 400;
+  line-height: 1.45;
+}
 .more { margin-top: .75rem; }
 
 /* ---- post lists ---- */

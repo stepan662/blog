@@ -5,16 +5,19 @@
   <section class="recent">
     <h2>&gt; recent posts</h2>
     {{ $posts := where site.RegularPages "Section" "posts" }}
+    {{ $limit := 5 }}
     {{ if $posts }}
     <ul class="post-list">
-      {{ range first 5 $posts }}
+      {{ range first $limit $posts }}
       <li>
         <time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006-01-02" }}</time>
         <a href="{{ .RelPermalink }}">{{ .Title }}</a>
       </li>
       {{ end }}
     </ul>
+    {{ if gt (len $posts) $limit }}
     <p class="more"><a href="{{ "/posts" | relURL }}">&gt; all posts</a></p>
+    {{ end }}
     {{ else }}
     <p class="muted">No posts yet.</p>
     {{ end }}
