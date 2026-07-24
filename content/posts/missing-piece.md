@@ -188,5 +188,7 @@ I'm aware there are a lot of sharp opinions on state management. I'm not saying 
 
 Because the library is quite simple, it only has about 1.2KB over the wire (and half of it is polyfill for React < 18).
 
+The full API and setup instructions live in the [react-arven README](https://github.com/stepan662/react-arven) — the only docs for now, but enough to get you going.
+
 So I hope you find it useful, cheers :)
 
