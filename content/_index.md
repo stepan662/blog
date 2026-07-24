@@ -10,9 +10,6 @@ description: "Personal site and blog of Štěpán Granát."
 Hi, I'm **Štěpán Granát**. This is my corner of the internet — a place for
 notes, projects, and the occasional longer write-up.
 
-I like building things that are small, fast, and a little bit plain. This site
-is no exception: static HTML, monospace type, no tracking, no clutter.
-
 ```
 > what's here
 ```

@@ -1,7 +1,7 @@
 ---
 title: "React doesn't need a state management tool, I said. Then I built one."
-date: 2026-06-26
-draft: true
+date: 2026-07-24
+slug: "react-arven"
 ---
 
 A while back I wrote an article with a title I stand behind to this day: [React doesn't need a state management tool](https://dev.to/tolgee_i18n/react-doesnt-need-state-management-tool-i-said-31l4). There's already a library for everything, and each new one just adds another decision to an exhausting pile.
@@ -91,7 +91,7 @@ function Parent() {
 
 How is this different? In React, when you pass children as a prop, the wrapper can re-render without touching the children. It took a while to wrap my head around this concept, so I'll try to explain this with a diagram:
 
-![Trees comparison](/blog/missing-piece/trees-comparison.svg)
+![Trees comparison](/blog/react-arven/trees-comparison.svg)
 
 In the picture the edges represent the render hierarchy. And notice that CountProvider is not a parent of TreeOfChildren, but still can provide context to them. It's basically only saying where to render, but isn't rendering itself. So if we change the state, it's acting like a leaf node in this structure.
 
