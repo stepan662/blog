@@ -28,7 +28,7 @@ There's just one problem, and it's a big one: performance. Context forces every 
 
 ## Meet react-arven
 
-But imagine we could keep everything good about context and lose the re-renders. That's exactly what [react-arven](https://github.com/stepan662/react-arven) is for. The name is a bit mystical, but the idea is simple — and it falls out of three specific problems with Context, so let me walk through them.
+Imagine we could keep everything good about context and lose the re-renders. That's exactly what [react-arven](https://github.com/stepan662/react-arven) is for. The name is a bit mystical, but the idea is simple — and it falls out of three specific problems with Context, so let me walk through them.
 
 ### 1. The ability to select data
 
@@ -183,7 +183,7 @@ The types for your state and actions are inferred automatically — you don't ha
 
 ## I offer, I don't impose
 
-I'm aware there are a lot of sharp opinions on state management. I'm not saying this is the correct way, I think every solution has pros and cons, but this is what worked for me and the library was used internally in my last job, I've just polished it and gave it a name. We've used it on a pretty large project and we only needed about 4 separate contexts, for the whole app - in other cases we used local state in combination with react-query and formik.
+I think every solution has pros and cons, but this is what worked for me and the library was used internally in my last job, I've just polished it and gave it a name. We've used it on a pretty large project and we only needed about 4 separate contexts, for the whole app - in other cases we used local state in combination with react-query and formik.
 
 Because the library is quite simple, it only has about 1.2KB over the wire (and half of it is polyfill for React < 18).
 
