@@ -1,7 +1,7 @@
 ---
 title: "React doesn't need a state management tool, I said. Then I built one."
 date: 2026-07-24
-slug: "react-arven"
+aliases: ["/posts/react-arven/"]
 ---
 
 A while back I wrote an article with a title I stand behind to this day: [React doesn't need a state management tool](https://dev.to/tolgee_i18n/react-doesnt-need-state-management-tool-i-said-31l4). There's already a library for everything, and each new one just adds another decision to an exhausting pile.

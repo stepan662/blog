@@ -20,9 +20,10 @@
     /* Cross-document view transitions. Each transition's flavour is chosen by
        tagging <html data-vt-direction> before a snapshot is captured, so the
        stylesheet can partition and animate the page to match: going deeper,
-       content enters from the right; coming back, from the left; re-navigating to
-       the page we're already on becomes "scroll" — the whole viewport is captured
-       as one image that glides from the old scroll position to the new.
+       content enters from the right; coming back, from the left; moving between
+       posts follows their date order (newer from the right, older from the left);
+       re-navigating to the page we're already on becomes "scroll" — the whole
+       viewport is captured as one image that glides from old scroll to new.
 
        Every decision needs one fact: which page we came from. We keep it in
        sessionStorage — each page leaves its path for the next to read — which is
@@ -31,24 +32,35 @@
     (function () {
       var root = document.documentElement;
       var norm = function (path) {
-        return path.replace(/\/+$/, "") || "/";
-      };
-      var depth = function (path) {
-        return norm(path).split("/").filter(Boolean).length;
+        return path.replace(/#.*$/, "").replace(/\/+$/, "") || "/";
       };
 
-      /* Incoming: compare where we came from with where we are, and tag the page
-         before its snapshot is taken. Then leave our own path for whoever's next. */
-      var from = sessionStorage.getItem("vt-from");
-      if (from !== null) {
-        if (norm(from) === norm(location.pathname)) {
-          root.dataset.vtDirection = "scroll";
-        } else {
-          var d = depth(location.pathname) - depth(from);
-          root.dataset.vtDirection = d > 0 ? "forward" : d < 0 ? "back" : "none";
-        }
-      }
-      sessionStorage.setItem("vt-from", location.pathname);
+      /* Tag the page — before its snapshot is taken — from a single lexicographic
+         comparison of where we came from and where we are. It covers every case
+         because the URLs are built for it: a child path sorts after its parent, so
+         descending into a section slides forward and climbing back slides back; and
+         every post's URL starts with its date (/posts/YYYY-MM-DD-…), so a newer
+         post sorts after an older one and moving between posts slides in date
+         order. Same path → same page → a scroll. */
+      var tag = function () {
+        var from = sessionStorage.getItem("vt-from");
+        if (from === null) return;
+        var a = norm(from), b = norm(location.pathname);
+        root.dataset.vtDirection = a === b ? "scroll" : b > a ? "forward" : "back";
+      };
+      // Run it on a normal load (inline, before the snapshot, in every engine) and
+      // again on pagereveal — which also fires when a page is shown from the
+      // back/forward cache, where inline scripts do NOT re-run. Without the second
+      // call, history navigations would reuse a stale tag and slide the wrong way.
+      tag();
+      addEventListener("pagereveal", tag);
+
+      /* Leave our path for the next page as we go — in pagehide (not inline) so it's
+         recorded even when leaving a page the browser restored from the back/forward
+         cache, keeping "where we came from" correct across history navigation. */
+      addEventListener("pagehide", function () {
+        sessionStorage.setItem("vt-from", location.pathname);
+      });
 
       /* Outgoing: a same-URL navigation is the one case the incoming tag can't set
          in time — the old page must be tagged "scroll" before *it* is captured. A
