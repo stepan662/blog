@@ -39,7 +39,7 @@ Libraries like redux or zustand allow us to select only the part we want, and th
 The trick to fix this is actually quite simple, we can create a ref, and hide the state into the `value.current` mutable property. Then we can use well known mechanism from redux - selectors.
 
 ```ts
-const items = useContextSelector(context => context.items)
+const items = useContextSelector(Context, c => c.items)
 ```
 
 Simple, powerful.
@@ -101,8 +101,8 @@ In the picture the edges represent the render hierarchy. And notice that CountPr
 If you create custom actions (functions mutating the state), they end up as unstable values in the context. Let me illustrate:
 
 ```tsx
-function FormProvider() {
-  const { mutate } = useQuery('')
+function FormProvider({ children }) {
+  const { mutate } = useMutation(...)
   // formState changes on every keystroke → submit is a new function each time
   const submit = useCallback(() => mutate(formState), [mutate, formState])
 
@@ -114,7 +114,7 @@ function FormProvider() {
 }
 
 function SubmitButton() {
-  const submit = useContextSelector(c => c.submit)
+  const submit = useContextSelector(Context, c => c.submit)
   return <button onClick={submit}>Submit</button> // re-renders on every keystroke
 }
 ```
@@ -131,14 +131,13 @@ If you made it this far, the design of react-arven should make sense for you. Le
 import { createProvider } from 'react-arven';
 
 const [FormProvider, useFormActions, useFormState] = createProvider(() => {
-  const [formState, setFormState] = (...)
-  const { mutate } = useQuery(...)
+  const [state, setState] = useState({ value: '' })
+  const { mutate } = useMutation(...)
 
-  const state = { value: formState.value }
   const actions = {
-    setFormState,
+    setState,
     submit() {
-      mutate(formState)
+      mutate(state)
     }
   }
 
@@ -159,9 +158,9 @@ function Parent() {
 
 function InputField() {
   const value = useFormState(c => c.value)
-  const { setFormState } = useFormActions()
+  const { setState } = useFormActions()
   return (
-    <input value={value} onChange={e => setFormState({ value: e.target.value })} />
+    <input value={value} onChange={e => setState({ value: e.target.value })} />
   )
 }
 
