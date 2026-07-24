@@ -32,6 +32,8 @@ But I think this actually misses the point a bit. Libraries like formik or react
 
 If you want to do this with zustand you usually endup copying the state, so everything is in zustand, but then we don't have a single source of truth and because zustand lives outside the react lifecycle, it's easy to forget about cleaning the state on dismouts and so on.
 
+You might also reach for something like Jotai — a great library that gets much closer. With derived atoms and `atomWithQuery` you really can combine fetched data with local state. But notice what happened to get there: everything had to become an atom. Jotai is still a state *source* — a new primitive you build on top of. What I wanted was different: not another place to keep state, but a way to *combine* the state I already have.
+
 ## What is actually missing?
 
 I used to use React Context to centralize my state and the concept is actually great. The same state hook that you've defined in you local component, can simply be moved up in the hierarchy and then you can just pass the value and actions down to the children through the context.
@@ -67,6 +69,8 @@ const items = useContextSelector(context => context.items)
 ```
 
 Simple, powerful.
+
+To be fair, none of this is new. dai-shi's [`use-context-selector`](https://github.com/dai-shi/use-context-selector) popularized exactly this pattern, and since React 18 the primitive ships built-in — `useSyncExternalStore` lets a component subscribe to an external store through a selector.
 
 ### 2. Parent re-render
 
@@ -178,6 +182,8 @@ function FormProvider() {
 ```
 
 It's hard do explain what is really happening, but basically the result of this is a stable proxy function, which will call the original function.
+
+If this pattern looks familiar, it's the same idea as React's own `useEvent` / `useEffectEvent` proposal — a function with a stable identity that always sees the latest state. react-arven applies it to every action for you, so this ref dance never shows up in your own code.
 
 ## Now put it all together
 
