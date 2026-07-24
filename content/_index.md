@@ -8,3 +8,7 @@ description: "Personal site and blog of Štěpán Granát."
 ```
 
 Hi, I'm **Štěpán**. I build things and occasionally write about them.
+
+```
+> recent posts
+```

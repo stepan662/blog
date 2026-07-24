@@ -1,9 +1,7 @@
 {{ define "main" }}
 <article class="home">
   {{ .Content }}
-
   <section class="recent">
-    <h2>&gt; recent posts</h2>
     {{ $posts := where site.RegularPages "Section" "posts" }}
     {{ $limit := 5 }}
     {{ if $posts }}
