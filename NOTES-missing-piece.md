@@ -22,25 +22,33 @@ Working checklist for `content/posts/missing-piece-outline.md`. Tackle one at a 
   - Value-add sentence in both: react-arven wires it into the provider / applies
     it to every action, so you never hand-write the trick.
 
-- [ ] **A3. Show, don't assert, the performance win.**
-  The post claims perf but shows no measurement. Add a concrete before/after —
-  even one line: "this input re-rendered every keystroke before, doesn't now."
+- [x] **A3. Show, don't assert, the performance win.** ⏭️ CUT (intentional)
+  Dropped to keep the article short — asserting the perf win is fine. Could
+  revisit later with a React DevTools "Highlight updates" GIF if desired.
+
+- [x] **Length pass.** ✅ DONE
+  Front half was five setup sections with repeated ideas. Merged Intro + The 20%
+  gap into one "Intro"; merged "What is actually missing?" + "But is it really
+  all bad?" + the Meet react-arven intro into two tight sections; removed the
+  redundant "bad practice" restatement. Technical sections #1/#2/#3 left intact.
 
 ## B. Correctness fixes (mechanical — I can just do these)
 
-- [ ] **B1. Inverted sentence (line ~114) — most important fix.**
-  "the wrapper will actually re-render touching the children" says the OPPOSITE
-  of what you mean → should be "re-render **without** re-rendering the children."
+- [x] **B1. Inverted sentence.** ✅ → "the wrapper can re-render **without** touching the children."
 
-- [ ] **B2. State/selector name mismatch in the final example (lines ~189–222).**
-  `state = { formState }` but `InputField` does `useFormState(c => c.value)` and
-  `setFormState({ value })`. Pick one name (formState vs value).
+- [x] **B2. State/selector name mismatch.** ✅ Made state expose `value`:
+  `const state = { value: formState.value }` — now aligns with `useFormState(c => c.value)`.
 
-- [ ] **B3. Broken JSX: `<button>Submit<button>` → `</button>` (lines ~144 and ~228).**
+- [x] **B3. Broken JSX `<button>Submit<button>` → `</button>` (both spots).** ✅
 
-- [ ] **B4. Typo pass.**
-  paralesis, environmet, effortles, livecycle, contreoller, dismouts, yayks,
-  "there are that there are a lot", "an callback", etc.
+- [x] **B4. Typo pass.** ✅
+  Fixed: paralesis→paralysis, "into into", "a small shared states", "source of a
+  state", "regardless of where", endup→"end up", dismouts→unmount, "able to
+  provide single value", "He's…himself"→"It's…itself", "hard do explain", "an
+  callback", the Typescript sentence ("is inferred"→"are inferred"),
+  "there are that there are", "on a pretty large project".
+  (environmet / effortles / livecycle / contreoller / yayks were already removed
+  by the earlier merges.)
 
 ## C. Housekeeping
 
