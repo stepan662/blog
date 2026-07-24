@@ -4,176 +4,179 @@ date: 2026-06-26
 draft: true
 ---
 
-When I was at the university the web was really messy platform. It was around year 2016 and jQuery was starting to be obsolete. Developers knew that the way how we write frontend code is not scalable, but there was not a clear replacement yet. It was the "hot" days of frontend frameworks. Every project I wrote became obsolete almost instantly, because a new better framework always popped up.
+For years, I've tried to avoid creating a React library, there are already libraries for everything and new libraries just create decision paralysis. In the end I've ended up creating one anyway. But give me a chance, I might have some redeeming facts in my defence.
 
-These days the order of the most popular frameworks/libraries haven't changed for a [few years](https://2025.stateofjs.com/en-US/libraries/front-end-frameworks/#front_end_frameworks_ratios) and paradoxically Rust, Go and Zig now triggered "hot" rewrites in a different areas of software engineering. These 
+I was always a fan of React's API being minimal and its narrow focus — I think that's the hidden secret that made it so successful. So like many others, I've spent years exploring the libraries that plug into it, and fighting with the most important one: state management.
 
-## Why React
+I became a strong advocate of local state with specialized tools for specific tasks — react-query or SWR for data fetching, formik or react-hook-form for forms, and so on. For maybe 80% of the cases this works perfectly: simple forms, views with a few buttons, no problem.
 
-Many times I was asking myself a question, why is React most popular, even though so many people tend to hate it? It's not the fastest one, it's not the most convenient one, it's not the easiest one to learn. And yet it still is the undisputed king.
+But the other 20% always got ugly. In some parts of the app a centralized state is just necessary — a super complicated custom form, or something performance-sensitive like an infinite scroll list. When everything is connected to everything, isolated states aren't the solution.
 
+## Existing solutions
 
-## Components
+The advice I found was to use some lightweight state management library like zustand to create small shared states. You basically get a mini redux store, that you can use anywhere.
 
-The major thing React does right are components. You are basically always working on component, you can focus only on that part of the codebase and it's independent from everything else. These days every framework does this, but it wasn't granted in the age of jQuery.
+But I think this actually misses the point a bit. Libraries like formik or react-query are sources of state and zustand is a source of state as well. I usually need to combine data from multiple sources, some data are fetched, some are in formik and some are my custom state. I would like to combine them into one piece and let the components use this state regardless of where it's coming from.
 
-## The stability
+If you want to do this with zustand you usually end up copying the state, so everything is in zustand, but then we don't have a single source of truth and because zustand lives outside the React lifecycle, it's easy to forget about cleaning the state on unmount and so on.
 
-Last amost 5 years I was in charge of a React application and I think the biggest thing was that we were able to avoid big rewrites. Yes the codebase was envolving, we were swapping some libraries, but we were always able to do it gradually. At one point, we decided to stop using Redux for fetching data and start using react-query. For about 3 years we still had redux in our codebase, but piece by piece, we were able to remove it, when we were re-working the given piece of the codebase.
+You might also reach for something like Jotai — a great library that gets much closer. With derived atoms and `atomWithQuery` you really can combine fetched data with local state. But notice what happened to get there: everything had to become an atom. Jotai is still a state *source* — a new primitive you build on top of. What I wanted was different: not another place to keep state, but a way to *combine* the state I already have.
 
-We were able to test new styling methods, and it was no problem to test it out and see if it works or not. In a way this leads to the codebase being a bit "messy". But it's much better than doing a complete rewrite.
+## What is actually missing?
 
-## Minimmialistic API
+I used to reach for React Context, and conceptually it's perfect: the same state hook you'd write in a local component just moves up the tree, and you pass the value and actions down. Usually it isn't even complicated — a bit of `useState`, a `useQuery`, a few functions to mutate it. Find a common ancestor, put the state there, and you've built a "controller" component that resets automatically when it unmounts.
 
-What React does right from the begining is, keeping it's API minimal and only focusing on the core functionality. Library for rendering, using components, that's it.
+There's just one problem, and it's a big one: performance. Context forces every subscriber to re-render on every change — one keystroke can re-render half your app. That's why sharing frequently-changing state through context is considered bad practice.
 
-And it's not without a tradeoffs. As a beginner you've learned React and then you needed to decide, how do I fetch data, how do I do routing, forms, css and so on. And are always different approaches as a beginner it's difficult to make a decision on this.
+## Meet react-arven
 
-However this was the best strategy long-term. React team was able to make a quite big changes to the library, without major breaks to backward compatibility and still keeping the API quite clean. If you have a framework this is really difficult to do, and if you have many features, it's almost impossible to add a new one which would plug into the framework cleanly.
+But imagine we could keep everything good about context and lose the re-renders. That's exactly what react-arven is for. The name is a bit mystical, but the idea is simple — and it falls out of three specific problems with Context, so let me walk through them.
 
-## Issue of state management
+### 1. No ability to select data
 
-One area that react left mostly avoided was how to solve complex state management. When I started with react, the library to go to was redux. Idea is, you have one big state for your whole app and any component can subscribe to any piece of the state and use it. The library will take care of letting your components know about the changes.
+The most obvious issue of the React Context API is the fact that it can only provide a single value, and whenever that value changes, it forces all subscribers to re-render.
 
-However, this breaks the isolation of components. The global state can be useful in a certain nieche apps, where everything is connected with everything. But for app that has e.g. multiple routes/pages, this becomes a burden.
+Libraries like redux or zustand allow us to select only the part we want, and then our component re-renders only if the required piece of the state changed.
 
-### Specialized tools
+The trick to fix this is actually quite simple, we can create a ref, and hide the state into the `value.current` mutable property. Then we can use well known mechanism from redux - selectors.
 
-As soon as I discovered swr/react-query, I've drifted away from redux and my approach was to use specialized tools for specialized tasks. React-query for data fetching formik for forms. Turned out this covers about 80% of your state management and the rest you can just use local state in components or use zustand for ad hoc shared state.
+```ts
+const items = useContextSelector(context => context.items)
+```
 
-### Combination create problems
+Simple, powerful.
 
-I find the missing 20% problematic. Let me illustrate. At my last employment we had a main view of items, which was quite complicated. It was highly optimized infinite scroll view with editor and many other things connected to it. The state management was quite complicated mainly because of optimization reasons. It was necessary to store fetched items in one place, so we can update them without refetching. We also needed to know what is a current edited value and many more things, highly connected between each other.
+To be fair, none of this is new. dai-shi's [`use-context-selector`](https://github.com/dai-shi/use-context-selector) popularized exactly this pattern, and since React 18 the primitive ships built-in — `useSyncExternalStore` lets a component subscribe to an external store through a selector.
 
-Because of this we decided to have state for this view centralized in one component - something like a mini redux store. However, I found the combination of tools quite hard. You can for example create zustand store with some state, which would be useful for e.g. the editor state and this we can share in multiple components, ok. But what if I need to combine data that I've fetched with this state? Data were fetched through react-query and they live in the react dom. I would need to pass them down via props or context, but that would not be performant.
+### 2. Parent re-render
 
-### Missing piece
-
-What we were missing was a state orchestration tool. We basically have different external stores, react-query has it's own store, zustand as well. I would need to combine them into one centralized API, which would be accessible to all children. And the children don't have to care where is the state coming from.
-
-So I've built a simple library to do this. My idea was basically to have an extension to react-context, which would be subscribable and pass all the combined state down through that. I found this library [use-context-selector](https://github.com/dai-shi/use-context-selector). This is great, but I was missing one piece.
-
-### Passing actions down is painful (unnecessarly)
-
-Let's look at how this would look like on a simplified case:
+This is a hidden foot-gun, let me show an example.
 
 ```tsx
-import { createContext, useContextSelector } from 'use-context-selector';
+const Context = React.createContext(...)
 
-const context = createContext(null);
-
-
-const StateProvider = ({ children }) => {
-  const items = useQuery(....)
-  const updateItem = useQuery(...)
-  const [value, setValue] = useState('')
-
-  const state = {
-    value,
-    setValue,
-    items: items.data,
-    updateItem(id) {
-      update.mutate({
-        id,
-        value,
-        ....
-      })
-    }
-  }
+function Parent() {
+  const [count, setCount] = useState(0)
 
   return (
-    <context.Provider value={state}>
-      {children}
-    </context.Provider>
+    <Context.Provider value={{count, setCount}}>
+      <TreeOfChildren />
+    </Context.Provider>
   )
-};
+}
+```
 
-// editor is rendered on item level in the infinitelly scrollable list
-const Editor = ({ item }) => {
-  const value = useContextSelector(context, c => c.value)
-  const updateItem = useContextSelector(context, c => c.updateItem)
+It's easy to use context like this, but there is a huge performance problem. Because we are keeping the component which is parent to the whole subtree, when it re-renders all the children re-render as well (unless they use React.memo). Even components which are not using the context at all will get re-rendered, because it's not actually the context, which is causing this, it's the parent child structure.
+
+We need to do a subtle change, to prevent this:
+
+```tsx
+const Context = React.createContext(...)
+
+function CountProvider ({ children }) {
+  const [count, setCount] = useState(0)
   return (
-    <Editor 
-      value={value} 
-      onUpdate={() => updateItem(item.id)} 
-    />
+    <Context.Provider value={{count, setCount}}>
+      {children}
+    </Context.Provider>
   )
 }
 
+function Parent() {
+  return (
+    <CountProvider>
+      <TreeOfChildren />
+    </CountProvider>
+  )
+}
 ```
 
-> Note: Since react 18 it is quite easy to implement selectable context yourself with `useSyncExternalStore`, so you don't even need this library.
+How is this different? In React, when you pass children as a prop, the wrapper can re-render without touching the children. It took a while to wrap my head around this concept, so I'll try to explain this with a diagram:
 
-This is quite nice, but there is one quite big issue. The whole point of this construction is performance, and `updateItem` is not stable - it's re-generated on every render. So because we are subscribing to it, we are re-rendering the editor on every change of the context. For this to be truely performant, we would need to wrap `updateItem` with `useCallback`, but that is dependant on `value`, so we would need to add it to dependencies.
+![Trees comparison](/blog/missing-piece/trees-comparison.svg)
 
-I'm sure you know this problem if you use React. Thing is, this is all quite unnecessary. We would want the `updateItem` to behave similarly to the react state update, which is stable even if the internal state changes.
+In the picture the edges represent the render hierarchy. And notice that CountProvider is not a parent of TreeOfChildren, but still can provide context to them. It's basically only saying where to render, but isn't rendering itself. So if we change the state, it's acting like a leaf node in this structure.
 
-### How to solve this?
 
-I had a few iterations on this, but finally I've came to quite simple solution. Let's let the user separate state from actions.
+### 3. Unstable actions
 
-```ts
-
-  const state = {
-    value,
-    setValue,
-    items: items.data,
-  }
-
-  const actions = {
-    setValue,
-    updateItem(id) {
-      update.mutate({
-        id,
-        value,
-        ....
-      })
-    }
-  }
-```
-
-The actions object should be stable, so we can create proxy object which mirrors the actions object, but is created only once and has stable functions.
-
-```ts
-  const currentActionsRef = useRef(actions);
-  const stableActionsRef = useRef<A>();
-
-  currentActionsRef.current = actions;
-
-  // stable actions
-  if (!stableActionsRef.current) {
-    Object.keys(actions).forEach((key) => {
-      stableActionsRef.current[key] = (...params) => currentActionsRef.current[key](...params)
-    })
-  }  
-```
-
-### Final solution
-
-Now we have `state` and `stableActionsRef.current`, which we can then just pass through context, actions will be stable and state which will be subscribable. I've created a library out of this, which is called `react-arven`. Let's look at the result:
+If you create custom actions (functions mutating the state), they will be unstable values in the context. Let me illustrate the issue:
 
 ```tsx
+function FormProvider() {
+  const [formState, setFormState] = (...)
+  const { mutate } = useQuery('')
 
-import { createProvider } from 'react-arven';
+  const submit = useCallback(() => {
+    mutate(formState)
+  }, [mutate, formState])
 
-const [ItemsProvider, useItemsActions, useItemsState] = createProvider(() => {
-  const items = useQuery(....)
-  const updateItem = useQuery(...)
-  const [value, setValue] = useState('')
+  return (
+    <Context.Provider value={{formState, setFormState, submit}}>
+      {children}
+    </Context.Provider>
+  )
+}
 
-  const state = {
-    value,
-    items: items.data,
+function SubmitButton() {
+  const submit = useContextSelector(c => c.submit)
+  return (
+    <button onClick={submit}>Submit</button>
+  )
+}
+```
+
+If you look closely at this example, you'll see the SubmitButton will re-render on every keystroke in your form. And we are not able to fix it even with ugly `useCallback`, because we need to use formState inside.
+
+The only way to optimize this is with `useRef`, but the code is really ugly, so cover your eyes:
+
+```tsx
+function FormProvider() {
+  const [formState, setFormState] = (...)
+  const { mutate } = useQuery('')
+
+  const currentSubmitRef = useRef()
+
+  currentSubmitRef.current = () => {
+    mutate(formState)
   }
 
+  const stableSubmitRef = useRef()
+
+  if (!stableSubmitRef.current) {
+    stableSubmitRef.current = () => currentSubmitRef.current()
+  }
+
+  const submit = stableSubmitRef.current
+
+  return (
+    <Context.Provider value={{formState, setFormState, submit }}>
+      {children}
+    </Context.Provider>
+  )
+}
+```
+
+It's a bit hard to follow, but basically the result of this is a stable proxy function, which will call the original function.
+
+If this pattern looks familiar, it's the same idea as React's own `useEvent` / `useEffectEvent` proposal — a function with a stable identity that always sees the latest state. react-arven applies it to every action for you, so this ref dance never shows up in your own code.
+
+## Now put it all together
+
+If you made it this far, the design of react-arven should make sense for you. Let's look at the example:
+
+```tsx
+import { createProvider } from 'react-arven';
+
+const [FormProvider, useFormActions, useFormState] = createProvider(() => {
+  const [formState, setFormState] = (...)
+  const { mutate } = useQuery(...)
+
+  const state = { value: formState.value }
   const actions = {
-    setValue,
-    updateItem(id) {
-      update.mutate({
-        id,
-        value,
-        ....
-      })
+    setFormState,
+    submit() {
+      mutate(formState)
     }
   }
 
@@ -181,25 +184,47 @@ const [ItemsProvider, useItemsActions, useItemsState] = createProvider(() => {
     state,
     actions
   }
-});
+})
 
-// editor is rendered on item level in the infinitelly scrollable list
-const Editor = ({ item }) => {
-  const value = useItemsState(c => c.value)
-  const { updateItem } = useItemsActions()
+function Parent() {
   return (
-    <Editor 
-      value={value}
-      onUpdate={() => updateItem(item.id)} 
-    />
+    <FormProvider>
+      <InputField />
+      <SubmitButton />
+    </FormProvider>
+  )
+}
+
+function InputField() {
+  const value = useFormState(c => c.value)
+  const { setFormState } = useFormActions()
+  return (
+    <input value={value} onChange={e => setFormState({ value: e.target.value })} />
+  )
+}
+
+
+function SubmitButton() {
+  const { submit } = useFormActions()
+  return (
+    <button onClick={submit}>Submit</button>
   )
 }
 ```
 
-The library creates the context internally, and gives you the Provider and two hooks one for state and other for actions. The callback inside of `createProvider` is rendered as a regular react component and is expected to return object with state and action. It also infer types for the hooks.
+The body of `createProvider` is a callback, which is basically the body of a regular React component (so you can use hooks), only you have to return an object with `actions` and `state` fields (names are not arbitrary). The library will build the Provider with context for you and also give you two hooks - one for subscribing to the state and other for the actions.
 
-In the library `actions` needs to be plain object only with functions, you can have nested objects, which is an upgrade from our simple solution.
+Actions are separate, because we use the trick with the refs to make them stable - we basically create a copy of the actions object with a proxy functions, the shape is exactly the same as you put in, no magic just an optimization.
 
-## How to use it
+## TypeScript
 
-Even if you have this powerfull tool, I still advice to stick to simple local state in components where possible. I ended up with one global state (logged user, dark mode etc.) and just a few (like 4) other states. Because this works through react-context parts of the application which are not children of this, won't have access to this. Which nicely encapsulates only the relevant parts.
+The types for your state and actions are inferred automatically — you don't have to specify them manually like with a native React Context.
+
+## I offer, I don't impose
+
+I'm aware there are a lot of sharp opinions on state management. I'm not saying this is the correct way, I think every solution has pros and cons, but this is what worked for me and the library was used internally in my last job, I've just polished it and gave it a name. We've used it on a pretty large project and we only needed about 4 separate contexts, for the whole app - in other cases we used local state in combination with react-query and formik.
+
+Because the library is quite simple, it only has about 1.2KB over the wire (and half of it is polyfill for React < 18).
+
+So I hope you find it useful, cheers :)
+
