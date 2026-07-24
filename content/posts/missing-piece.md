@@ -28,7 +28,7 @@ There's just one problem, and it's a big one: performance. Context forces every 
 
 ## Meet react-arven
 
-But imagine we could keep everything good about context and lose the re-renders. That's exactly what react-arven is for. The name is a bit mystical, but the idea is simple — and it falls out of three specific problems with Context, so let me walk through them.
+But imagine we could keep everything good about context and lose the re-renders. That's exactly what [react-arven](https://github.com/stepan662/react-arven) is for. The name is a bit mystical, but the idea is simple — and it falls out of three specific problems with Context, so let me walk through them.
 
 ### 1. The ability to select data
 
