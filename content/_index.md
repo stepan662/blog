@@ -15,6 +15,5 @@ notes, projects, and the occasional longer write-up.
 ```
 
 - **[blog](/posts)** — things I'm thinking about
-- the source for this site (link it in the footer once it's on GitHub)
 
 Find me via the links at the bottom of the page.
