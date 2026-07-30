@@ -1,6 +1,8 @@
 ---
 title: "React doesn't need a state management tool, I said. Then I built one."
 date: 2026-07-24
+description: "I still think most apps don't need one. But the other 20% get ugly — so I fixed the three things that make React Context unusable for shared state, in 1.4 kB."
+tags: ["react", "state-management", "performance"]
 aliases: ["/posts/react-arven/"]
 ---
 

@@ -1,0 +1,71 @@
+{{/* ------------------------------------------------------------------
+     Sharing metadata: canonical URL, Open Graph, Twitter card.
+
+     Without these a shared link renders as a bare URL — no title, no blurb,
+     no image — on X, LinkedIn, Slack, Discord, Bluesky, Mastodon and Reddit.
+
+     Every value falls back down a chain, so a post that sets nothing still
+     gets something sensible:
+       title  — page title, then site title
+       descr  — front-matter description, then the post's own summary, then
+                the site description
+       image  — front-matter `image`, then the card generated for this page by
+                tools/og (see its README), then the site-wide default card
+     OG image URLs must be absolute, and the file has to be a raster format:
+     no crawler renders SVG.
+------------------------------------------------------------------ */}}
+
+{{- $descr := "" }}
+{{- with .Description }}{{ $descr = . }}
+{{- else }}{{ with .Summary }}{{ $descr = (. | plainify | chomp | truncate 200) }}
+{{- else }}{{ $descr = site.Params.description }}{{ end }}{{ end }}
+
+{{- /* Locate the card image. `.File` is nil on generated pages (taxonomies),
+       hence the guard before deriving a per-page path from the source file. */}}
+{{- $ogDefault := "/blog/og/default.png" }}
+{{- $image := $ogDefault }}
+{{- with .Params.image }}
+  {{- $image = . }}
+{{- else }}
+  {{- with .File }}
+    {{- $candidate := printf "/blog/og/%s.png" .ContentBaseName }}
+    {{- if fileExists (printf "static%s" $candidate) }}{{ $image = $candidate }}{{ end }}
+  {{- end }}
+{{- end }}
+
+<title>{{ if .IsHome }}{{ site.Title }}{{ else }}{{ .Title }} · {{ site.Title }}{{ end }}</title>
+<link rel="canonical" href="{{ .Permalink }}">
+<meta name="description" content="{{ $descr }}">
+<meta name="author" content="{{ site.Params.author }}">
+
+<meta property="og:site_name" content="{{ site.Title }}">
+{{- /* OG wants language_TERRITORY (en_US), not the BCP-47 en-us Hugo carries. */}}
+{{- $loc := split site.Language.Locale "-" }}
+<meta property="og:locale" content="{{ index $loc 0 }}{{ with (index $loc 1) }}_{{ upper . }}{{ end }}">
+<meta property="og:type" content="{{ cond .IsPage "article" "website" }}">
+<meta property="og:url" content="{{ .Permalink }}">
+<meta property="og:title" content="{{ cond .IsHome site.Title .Title }}">
+<meta property="og:description" content="{{ $descr }}">
+<meta property="og:image" content="{{ $image | absURL }}">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="{{ cond .IsHome site.Title .Title }} — {{ site.Title }}">
+
+{{- if and .IsPage (not .Date.IsZero) }}
+<meta property="article:published_time" content="{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}">
+{{- if ne .Lastmod .Date }}
+<meta property="article:modified_time" content="{{ .Lastmod.Format "2006-01-02T15:04:05Z07:00" }}">
+{{- end }}
+<meta property="article:author" content="{{ site.Params.author }}">
+{{- range .Params.tags }}
+<meta property="article:tag" content="{{ . }}">
+{{- end }}
+{{- end }}
+
+<meta name="twitter:card" content="summary_large_image">
+{{- with site.Params.twitter }}
+<meta name="twitter:creator" content="@{{ strings.TrimPrefix "@" . }}">
+{{- end }}
+<meta name="twitter:title" content="{{ cond .IsHome site.Title .Title }}">
+<meta name="twitter:description" content="{{ $descr }}">
+<meta name="twitter:image" content="{{ $image | absURL }}">
