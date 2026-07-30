@@ -106,12 +106,20 @@
      marshaller's problem — titles here carry apostrophes and em dashes,
      and hand-written JSON in a template gets that wrong eventually.
 ------------------------------------------------------------------ */}}
-{{- /* Every profile that is the same person, for entity reconciliation. */}}
+{{- /* Every profile that is the same person, for entity reconciliation.
+       `uniq` because the X profile arrives twice once it's also a footer
+       link: once from [params.social], once built from the handle. A
+       mailto: in there is a footer link, not a profile — drop it. */}}
 {{- $sameAs := slice }}
-{{- range $k, $v := site.Params.social }}{{ $sameAs = $sameAs | append $v }}{{ end }}
+{{- range $k, $v := site.Params.social }}
+  {{- if not (or (eq $k "email") (strings.HasPrefix $v "mailto:")) }}
+    {{- $sameAs = $sameAs | append $v }}
+  {{- end }}
+{{- end }}
 {{- with site.Params.twitter }}
   {{- $sameAs = $sameAs | append (printf "https://x.com/%s" (strings.TrimPrefix "@" .)) }}
 {{- end }}
+{{- $sameAs = $sameAs | uniq }}
 {{- $person := dict "@type" "Person" "name" site.Params.author "url" site.BaseURL }}
 {{- with $sameAs }}{{ $person = merge $person (dict "sameAs" .) }}{{ end }}
 

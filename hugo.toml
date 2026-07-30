@@ -29,6 +29,7 @@ disablePathToLower = false
   [params.social]
     github = 'https://github.com/stepan662'
     linkedin = 'https://www.linkedin.com/in/stepan-granat/'
+    x = 'https://x.com/stepan_granat'
 
 [menus]
   [[menus.main]]
