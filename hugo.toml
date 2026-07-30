@@ -20,6 +20,9 @@ disablePathToLower = false
   # Short suffix for <title> on list pages. Posts drop it entirely: Google cuts
   # titles around 60 characters, and an article headline needs every one of them.
   brand = 'granat.blog'
+  # X/Twitter handle, with or without the @. Drives twitter:site and
+  # twitter:creator on the card — without it X attributes the unfurl to nobody.
+  twitter = '@stepan_granat'
   # Social links: key = label shown in the footer, value = full URL.
   # Add any platform by adding a line — the template renders them all.
   # (For email, use a mailto: URL or just the address.)

@@ -81,9 +81,68 @@
 {{- end }}
 
 <meta name="twitter:card" content="summary_large_image">
+{{- /* site = the account the card is attributed to, creator = who wrote it.
+       One person writes everything here, so both point at the same handle. */}}
 {{- with site.Params.twitter }}
-<meta name="twitter:creator" content="@{{ strings.TrimPrefix "@" . }}">
+{{- $handle := printf "@%s" (strings.TrimPrefix "@" .) }}
+<meta name="twitter:site" content="{{ $handle }}">
+<meta name="twitter:creator" content="{{ $handle }}">
 {{- end }}
 <meta name="twitter:title" content="{{ cond .IsHome site.Title .Title }}">
 <meta name="twitter:description" content="{{ $ogdescr }}">
 <meta name="twitter:image" content="{{ $image | absURL }}">
+
+{{/* ------------------------------------------------------------------
+     JSON-LD. The OG tags above are for social unfurls; this is the same
+     facts in the vocabulary Google reads, and it's what makes a result
+     eligible for an article rich card with a byline and date rather than
+     a plain blue link.
+
+     Only the home page and posts emit it. List and tag pages have nothing
+     to say here that the crawler can't already see, and a CollectionPage
+     stub earns nothing.
+
+     Built as a dict and handed to `jsonify` so the escaping is the
+     marshaller's problem — titles here carry apostrophes and em dashes,
+     and hand-written JSON in a template gets that wrong eventually.
+------------------------------------------------------------------ */}}
+{{- /* Every profile that is the same person, for entity reconciliation. */}}
+{{- $sameAs := slice }}
+{{- range $k, $v := site.Params.social }}{{ $sameAs = $sameAs | append $v }}{{ end }}
+{{- with site.Params.twitter }}
+  {{- $sameAs = $sameAs | append (printf "https://x.com/%s" (strings.TrimPrefix "@" .)) }}
+{{- end }}
+{{- $person := dict "@type" "Person" "name" site.Params.author "url" site.BaseURL }}
+{{- with $sameAs }}{{ $person = merge $person (dict "sameAs" .) }}{{ end }}
+
+{{- $ld := dict }}
+{{- if .IsPage }}
+  {{- $ld = dict
+        "@context" "https://schema.org"
+        "@type" "BlogPosting"
+        "headline" .Title
+        "description" $descr
+        "url" .Permalink
+        "mainEntityOfPage" (dict "@type" "WebPage" "@id" .Permalink)
+        "image" ($image | absURL)
+        "author" $person
+        "publisher" $person }}
+  {{- if not .Date.IsZero }}
+    {{- $ld = merge $ld (dict "datePublished" (.Date.Format "2006-01-02T15:04:05Z07:00")) }}
+    {{- $ld = merge $ld (dict "dateModified" (.Lastmod.Format "2006-01-02T15:04:05Z07:00")) }}
+  {{- end }}
+  {{- with .Params.tags }}{{ $ld = merge $ld (dict "keywords" (delimit . ", ")) }}{{ end }}
+  {{- with .WordCount }}{{ $ld = merge $ld (dict "wordCount" .) }}{{ end }}
+{{- else if .IsHome }}
+  {{- $ld = dict
+        "@context" "https://schema.org"
+        "@type" "WebSite"
+        "name" site.Title
+        "description" $descr
+        "url" site.BaseURL
+        "author" $person
+        "publisher" $person }}
+{{- end }}
+{{- with $ld }}
+<script type="application/ld+json">{{ . | jsonify | safeJS }}</script>
+{{- end }}
