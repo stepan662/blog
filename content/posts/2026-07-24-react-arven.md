@@ -135,22 +135,23 @@ If you made it this far, the design of react-arven should make sense for you. Le
 ```tsx
 import { createProvider } from 'react-arven';
 
-const [FormProvider, useFormActions, useFormState] = createProvider(() => {
-  const [state, setState] = useState({ value: '' })
+function useFormStore() {
+  const [value, setValue] = useState('')
   const { mutate } = useMutation(...)
 
-  const actions = {
-    setState,
-    submit() {
-      mutate(state)
-    }
+  function submit() {
+    // no useCallback necessary
+    setValue('')
+    mutate({ value })
   }
 
   return {
-    state,
-    actions
+    actions: { setValue, submit },
+    state: { value }
   }
-})
+}
+
+const [FormProvider, useFormActions, useFormState] = createProvider(useFormStore)
 
 function Parent() {
   return (
@@ -162,10 +163,10 @@ function Parent() {
 }
 
 function InputField() {
-  const value = useFormState(c => c.value)
-  const { setState } = useFormActions()
+  const value = useFormState(s => s.value)
+  const { setValue } = useFormActions()
   return (
-    <input value={value} onChange={e => setState({ value: e.target.value })} />
+    <input value={value} onChange={e => setValue(e.target.value)} />
   )
 }
 
@@ -178,9 +179,17 @@ function SubmitButton() {
 }
 ```
 
-The body of `createProvider` is a callback, which is basically the body of a regular React component (so you can use hooks). The one rule is that it must return an object with exactly two fields, named `state` and `actions`. Those names aren't arbitrary — the library looks them up by name, so you can't rename them or swap them around. Everything under `state` is what components subscribe to; everything under `actions` is the functions that change it. From that one callback the library builds the Provider for you and hands back two hooks — one for subscribing to the state, one for reading the actions.
+The important part: `useFormStore` is a plain React hook. Nothing about it is special — the same `useState`, `useQuery` and mutating functions you'd write in a component, just gathered in one place. The only rule is its interface: it has to return an object with exactly two fields, named `state` and `actions`. Those names aren't arbitrary — the library looks them up by name, so you can't rename them or swap them around. Everything under `state` is what components subscribe to; everything under `actions` is the functions that change it. `createProvider` takes that hook and hands you back the Provider plus two hooks — one for subscribing to the state, one for reading the actions.
 
 Actions are kept in their own field so the library can make them stable with the ref trick from earlier — same shape you passed in, no magic, just an optimization. And because everything is inferred from what you return, the types for your state and actions come for free — no manual typing like you'd need with a native React Context.
+
+### Why a named hook and not an inline callback
+
+You can pass the body straight into `createProvider` as an arrow function and it works identically at runtime. But declaring it as a `use...` hook buys you two things for free.
+
+The first is the [React Compiler](https://react.dev/learn/react-compiler), and this one is a big deal. The compiler memoizes the internals of components and hooks automatically, but it only does that for functions it can recognise as one — and its rule is syntactic: a top-level function whose name starts with `use`. A function expression passed as an argument isn't a compilation unit, so nothing inside it gets optimized. Written as `useFormStore`, the whole body is compiled: derived objects and arrays keep their reference while their inputs don't change, which means you can select them whole from state without re-rendering on every keystroke — the `useMemo` you'd otherwise write by hand. The compiler isn't required, it's just that the hook form is the one that can benefit from it.
+
+The second is linting. `eslint-plugin-react-hooks` also recognizes hooks by name, so as a named hook your store body gets checked against the rules of hooks like any other — which matters, because a store body is exactly the kind of code where a conditional early return above a `useState` sneaks in.
 
 ## Performance
 
