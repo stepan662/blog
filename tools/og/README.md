@@ -1,32 +1,38 @@
-# Social cards
+# Social card
 
-`generate.mjs` renders the 1200×630 image that X, LinkedIn, Slack, Discord,
-Bluesky, Mastodon and Reddit show when someone shares a link here.
+`generate.mjs` renders `static/blog/og/default.png` — the image X, LinkedIn,
+Slack, Discord, Bluesky, Mastodon and Reddit show when someone shares a link
+here.
 
 ```sh
 node tools/og/generate.mjs
 ```
 
-It writes one PNG per published post to `static/blog/og/<content-basename>.png`,
-plus `default.png` for the home page, the post list and tag pages. **Commit the
-output** — the build just serves the files, so nothing regenerates in CI.
+**Commit the output** — the build just serves the file, nothing regenerates in
+CI. You only need to re-run this if you change the card design; it doesn't
+depend on posts, so adding or retitling one changes nothing.
 
-Re-run it whenever you add a post or change a title, then commit. A post with no
-card falls back to `default.png` rather than breaking, so forgetting is
-survivable, just wasteful — the title *is* the artwork here, and a generic card
-converts far worse than the real headline.
+## Why one card for every page
 
-If a headline sets badly on a card (too long, or it needs a shorter hook), add
-`ogTitle` to the post's front matter. It only affects the card; the page keeps
-its own title.
+Every unfurl already prints the post's title and description next to the image.
+Putting the title *inside* the image too just says it twice, which reads as a
+mistake. So the card carries the site's mark instead — the favicon gem, the
+wordmark, and the accent stripe — and does brand recognition rather than
+selling one specific article.
 
-## How it works
+The tradeoff is real: a per-post title card sells an individual post harder.
+If you ever want that for one post, set `image: /some/card.png` in its front
+matter and `layouts/partials/seo.html` will use it instead.
+
+## Editing it
+
+Colours are the dark scheme from `static/style.css`; the light values are noted
+in a comment if you want to flip it. `WORDMARK` and `TAGLINE` are constants at
+the top of the script.
 
 The card is plain HTML screenshotted by headless Chrome — no dependencies, and
-the design stays editable as CSS inside `generate.mjs`. Colours come from the
-light scheme in `static/style.css`, so the cards look like the site.
+the design stays editable as CSS inside `generate.mjs`. Chrome is expected at
+the macOS default path; override with `CHROME_PATH=…`.
 
-Chrome is expected at the macOS default path. Override with `CHROME_PATH=…`.
-
-Output has to be a raster format: no crawler renders SVG, so the site's own
-diagrams can't double as cards.
+Output has to be a raster format: no crawler renders SVG, so `favicon.svg`
+can't be pointed at directly.

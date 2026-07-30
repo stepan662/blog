@@ -9,8 +9,7 @@
        title  — page title, then site title
        descr  — front-matter description, then the post's own summary, then
                 the site description
-       image  — front-matter `image`, then the card generated for this page by
-                tools/og (see its README), then the site-wide default card
+       image  — front-matter `image`, then the site-wide card from tools/og
      OG image URLs must be absolute, and the file has to be a raster format:
      no crawler renders SVG.
 ------------------------------------------------------------------ */}}
@@ -20,18 +19,10 @@
 {{- else }}{{ with .Summary }}{{ $descr = (. | plainify | chomp | truncate 200) }}
 {{- else }}{{ $descr = site.Params.description }}{{ end }}{{ end }}
 
-{{- /* Locate the card image. `.File` is nil on generated pages (taxonomies),
-       hence the guard before deriving a per-page path from the source file. */}}
-{{- $ogDefault := "/blog/og/default.png" }}
-{{- $image := $ogDefault }}
-{{- with .Params.image }}
-  {{- $image = . }}
-{{- else }}
-  {{- with .File }}
-    {{- $candidate := printf "/blog/og/%s.png" .ContentBaseName }}
-    {{- if fileExists (printf "static%s" $candidate) }}{{ $image = $candidate }}{{ end }}
-  {{- end }}
-{{- end }}
+{{- /* One card for the whole site — the unfurl prints the title beside it, so
+       the image is the mark, not the headline. A post can still opt out with
+       `image:` in its front matter. */}}
+{{- $image := .Params.image | default "/blog/og/default.png" }}
 
 <title>{{ if .IsHome }}{{ site.Title }}{{ else }}{{ .Title }} · {{ site.Title }}{{ end }}</title>
 <link rel="canonical" href="{{ .Permalink }}">
