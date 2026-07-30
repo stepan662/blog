@@ -16,9 +16,8 @@ depend on posts, so adding or retitling one changes nothing.
 
 Every unfurl already prints the post's title and description next to the image.
 Putting the title *inside* the image too just says it twice, which reads as a
-mistake. So the card carries the site's mark instead — the favicon gem, the
-wordmark, and the accent stripe — and does brand recognition rather than
-selling one specific article.
+mistake. So the card carries the site's mark instead — the favicon gem and the
+wordmark — and does brand recognition rather than selling one specific article.
 
 The tradeoff is real: a per-post title card sells an individual post harder.
 If you ever want that for one post, set `image: /some/card.png` in its front

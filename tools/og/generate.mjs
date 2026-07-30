@@ -73,12 +73,6 @@ const html = `<!doctype html>
     -webkit-font-smoothing: antialiased;
     display: flex; align-items: center; justify-content: center;
   }
-  /* A hairline of accent down the left edge — the same terracotta the site
-     uses for links, so the card is recognisable even as a thumbnail. */
-  body::before {
-    content: ""; position: fixed; left: 0; top: 0; bottom: 0; width: 10px;
-    background: ${C.accent};
-  }
   .stack { display: flex; flex-direction: column; align-items: center; }
   .mark {
     font-size: 64px; font-weight: 700; letter-spacing: -.02em; margin-top: 28px;
