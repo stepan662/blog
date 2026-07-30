@@ -31,7 +31,7 @@ const CHROME = process.env.CHROME_PATH
   ?? "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome";
 
 const WORDMARK = "granat.blog";
-const TAGLINE = "web, React, and things I got wrong";
+const TAGLINE = "React, performance, and stubborn problems";
 
 /* The dark scheme from static/style.css. A card is one fixed image shown
    against both light and dark feeds, so it can't adapt — dark wins here

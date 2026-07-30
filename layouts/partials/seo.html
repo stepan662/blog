@@ -9,6 +9,12 @@
        title  — page title, then site title
        descr  — front-matter description, then the post's own summary, then
                 the site description
+       ogdesc — front-matter ogDescription, then descr. These are split on
+                purpose: Google's snippet rewards 120-160 characters, while a
+                social preview shows roughly 125 before truncating on mobile.
+                One string can't be ideal for both, so a post that cares can
+                write a tighter one for the card and keep the long one for
+                search.
        image  — front-matter `image`, then the site-wide card from tools/og
      OG image URLs must be absolute, and the file has to be a raster format:
      no crawler renders SVG.
@@ -19,12 +25,33 @@
 {{- else }}{{ with .Summary }}{{ $descr = (. | plainify | chomp | truncate 200) }}
 {{- else }}{{ $descr = site.Params.description }}{{ end }}{{ end }}
 
+{{- /* Taxonomy terms have no source file to carry a description, so build one
+       rather than let every tag page repeat the site blurb verbatim —
+       duplicate descriptions across pages are exactly what a SERP audit
+       flags. */}}
+{{- if and .IsNode .Data.Term }}
+  {{- /* Sized so the longest existing tag still lands inside the 120-160 window
+         a SERP snippet rewards. A much longer tag would overshoot — worth a
+         glance if you ever add one. */}}
+  {{- $descr = printf "Posts tagged #%s — writing by %s on React, web performance, and the stubborn problems underneath ordinary frontend work." .Data.Term site.Params.author }}
+{{- end }}
+
+{{- /* Fall back to the search description, clipped to what a card actually
+       shows. `truncate` breaks on a word, so the auto case still reads as a
+       sentence; a post that wants a hand-written one sets ogDescription. */}}
+{{- $ogdescr := .Params.ogDescription | default ($descr | truncate 120) }}
+
 {{- /* One card for the whole site — the unfurl prints the title beside it, so
        the image is the mark, not the headline. A post can still opt out with
        `image:` in its front matter. */}}
 {{- $image := .Params.image | default "/blog/og/default.png" }}
 
-<title>{{ if .IsHome }}{{ site.Title }}{{ else }}{{ .Title }} · {{ site.Title }}{{ end }}</title>
+{{- /* A post's <title> is the headline alone. Google truncates around 60
+       characters and appends the site name itself, so spending 24 of them on
+       a suffix only buys a cut-off headline. List pages, whose titles are one
+       word, keep a short brand tag. */}}
+{{- $brand := site.Params.brand | default site.Title }}
+<title>{{ if .IsHome }}{{ site.Title }}{{ else if .IsPage }}{{ .Title }}{{ else }}{{ .Title }} · {{ $brand }}{{ end }}</title>
 <link rel="canonical" href="{{ .Permalink }}">
 <meta name="description" content="{{ $descr }}">
 <meta name="author" content="{{ site.Params.author }}">
@@ -36,7 +63,7 @@
 <meta property="og:type" content="{{ cond .IsPage "article" "website" }}">
 <meta property="og:url" content="{{ .Permalink }}">
 <meta property="og:title" content="{{ cond .IsHome site.Title .Title }}">
-<meta property="og:description" content="{{ $descr }}">
+<meta property="og:description" content="{{ $ogdescr }}">
 <meta property="og:image" content="{{ $image | absURL }}">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
@@ -58,5 +85,5 @@
 <meta name="twitter:creator" content="@{{ strings.TrimPrefix "@" . }}">
 {{- end }}
 <meta name="twitter:title" content="{{ cond .IsHome site.Title .Title }}">
-<meta name="twitter:description" content="{{ $descr }}">
+<meta name="twitter:description" content="{{ $ogdescr }}">
 <meta name="twitter:image" content="{{ $image | absURL }}">

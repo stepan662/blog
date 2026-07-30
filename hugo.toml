@@ -16,7 +16,10 @@ disablePathToLower = false
 [params]
   # Shown in the header frame and footer
   author = 'Štěpán Granát'
-  description = 'Personal site and blog of Štěpán Granát.'
+  description = 'Personal site and blog of Štěpán Granát — a frontend developer writing about React, web performance, and the stubborn problems underneath both.'
+  # Short suffix for <title> on list pages. Posts drop it entirely: Google cuts
+  # titles around 60 characters, and an article headline needs every one of them.
+  brand = 'granat.blog'
   # Social links: key = label shown in the footer, value = full URL.
   # Add any platform by adding a line — the template renders them all.
   # (For email, use a mailto: URL or just the address.)
