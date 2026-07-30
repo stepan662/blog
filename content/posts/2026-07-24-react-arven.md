@@ -201,7 +201,7 @@ Used carefully, you get really good performance without ugly workarounds. In the
 
 I think every solution has pros and cons, but this is what worked for me. The library was used internally at my last job; I've just polished it and given it a name. We used it on a pretty large project and needed only about 4 separate contexts for the whole app — everywhere else we used local state in combination with react-query and formik.
 
-Because the library is quite simple, it only has about 1.2KB over the wire (and half of it is polyfill for React < 18).
+Because the library is quite simple, it's only about 1.4 kB minified and gzipped, with no dependencies of its own. It does need React 18 or newer, though — the subscription is built on `useSyncExternalStore`, the primitive I mentioned earlier, and that's the version it first shipped in. There's no polyfill in the bundle, so anything older is out.
 
 The full API and setup instructions live in the [react-arven README](https://github.com/stepan662/react-arven) — the only docs for now, but enough to get you going.
 
