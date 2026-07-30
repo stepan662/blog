@@ -1,0 +1,26 @@
+{{/* ------------------------------------------------------------------
+     GoatCounter. Cookieless and stores no personal data, which is why
+     there's no consent banner anywhere on this site — that exemption is
+     the whole reason for this analytics choice, so think twice before
+     swapping in something that sets cookies.
+
+     Two gates, both deliberate:
+       production only — `hugo server` and CI previews would otherwise
+                         log your own editing as traffic, and on a blog
+                         this size that's most of the graph
+       param set       — no `goatcounter` in hugo.toml renders nothing,
+                         so a fresh clone stays silent instead of posting
+                         hits to a stranger's dashboard
+
+     The script is async and last in the body: analytics should never be
+     on the critical path for a page that renders this fast.
+------------------------------------------------------------------ */}}
+{{- if hugo.IsProduction }}
+  {{- with site.Params.goatcounter }}
+    {{- $endpoint := printf "https://%s.goatcounter.com/count" . }}
+<script data-goatcounter="{{ $endpoint }}" async src="//gc.zgo.at/count.js"></script>
+    {{- /* Counts readers who block JS or run Lynx-adjacent setups. Free —
+           it's a request that already had to reach the CDN anyway. */}}
+<noscript><img src="{{ $endpoint }}?p={{ $.RelPermalink }}" alt="" width="1" height="1"></noscript>
+  {{- end }}
+{{- end }}

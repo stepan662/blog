@@ -23,6 +23,10 @@ disablePathToLower = false
   # X/Twitter handle, with or without the @. Drives twitter:site and
   # twitter:creator on the card — without it X attributes the unfurl to nobody.
   twitter = '@stepan_granat'
+  # GoatCounter site code — the subdomain you pick at signup, so if your
+  # dashboard is stepan.goatcounter.com this is 'stepan'. Empty or missing
+  # disables analytics entirely; it only ever loads in production builds.
+  goatcounter = 'stepan-granat'
   # Social links: key = label shown in the footer, value = full URL.
   # Add any platform by adding a line — the template renders them all.
   # (For email, use a mailto: URL or just the address.)
