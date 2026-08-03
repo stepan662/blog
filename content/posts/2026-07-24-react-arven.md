@@ -110,6 +110,7 @@ If you create custom actions (functions mutating the state), they end up as unst
 
 ```tsx
 function FormProvider({ children }) {
+  const [formState, setFormState] = useState(...)
   const { mutate } = useMutation(...)
   // formState changes on every keystroke → submit is a new function each time
   const submit = useCallback(() => mutate(formState), [mutate, formState])
