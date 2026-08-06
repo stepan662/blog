@@ -25,7 +25,7 @@ With zustand you get there by copying everything into the store — but then it'
 
 ## What is actually missing?
 
-I used to reach for React Context, and conceptually it's exactly right: it gives that state a single home. You find a common ancestor, move the state up there — the same `useState`, `useQuery` and mutating functions you'd write in a local component, only now combined in one place — and pass the value and actions down. That's the whole point: one "controller" component that owns the combined state and resets automatically when it unmounts.
+I used to reach for React Context, and conceptually it's exactly right: it gives that state a single home. You find a common ancestor, move the state up there — the same `useState`, `useQuery` and mutating functions you'd write in a local component, only now combined in one place — and pass the value and actions down. That's the whole point: one "controller" component that holds the combined state and resets automatically when it unmounts.
 
 There's just one problem, and it's a big one: performance. Context forces every subscriber to re-render on every change — one keystroke can re-render half your app. That's why sharing frequently-changing state through context is considered bad practice.
 
@@ -49,7 +49,7 @@ Simple, powerful.
 
 To be fair, none of this is new. dai-shi's [`use-context-selector`](https://github.com/dai-shi/use-context-selector) popularized exactly this pattern, and since React 18 the primitive ships built-in — `useSyncExternalStore` lets a component subscribe to an external store through a selector.
 
-### 2. Preventing parent causing re-render
+### 2. Preventing re-renders from above
 
 This is a hidden foot-gun, let me show an example.
 
@@ -67,7 +67,7 @@ function Parent() {
 }
 ```
 
-It's easy to use context like this, but there is a huge performance problem. Because the component sits above the whole subtree, whenever it re-renders all of its children re-render as well (unless they use React.memo). Even components that don't use the context at all get re-rendered — it's not actually the context causing this, it's the parent-child structure.
+It's easy to use context like this, but there is a huge performance problem. Because the state lives in the parent component, whenever our state changes, it automatically re-renders the whole subtree — it's not actually the context causing this, it's how the tree is wired.
 
 We need to do a subtle change, to prevent this:
 
@@ -92,14 +92,20 @@ function Parent() {
 }
 ```
 
-How is this different? In React, when you pass children as a prop, the wrapper can re-render without touching the children. It took a while to wrap my head around this concept, so I'll try to explain this with a diagram:
+How is this different? React has actually two relationship types:
+ - render hierarchy - who is a parent of who
+ - ownership hierarchy - who created what
+
+ I'll try to explain this with a diagram:
 
 <picture>
   <source srcset="/blog/react-arven/trees-comparison-dark.svg" media="(prefers-color-scheme: dark)">
   <img src="/blog/react-arven/trees-comparison-light.svg" alt="Trees comparison">
 </picture>
 
-In the picture the edges represent the render hierarchy. And notice that CountProvider is not a parent of TreeOfChildren, but still can provide context to them. It's basically only saying where to render, but isn't rendering itself. So if we change the state, it's acting like a leaf node in this structure.
+In the picture the edges represent the ownership hierarchy. And notice that CountProvider is not an owner of TreeOfChildren, but because it sits above it in the render hierarchy it can provide context to it. Using the `children` prop is basically like adopting children.
+
+And that is what saves the re-render. Elements are created by their owner, so when `count` changes and only `CountProvider` re-renders, nobody creates a new `TreeOfChildren` element. React gets back the same object it already has, and skips the whole subtree.
 
 If you want to go deeper on React re-renders in general, I dug into it in [Faster: optimizing a React app to the bone](https://dev.to/tolgee_i18n/faster-optimizing-react-app-to-the-bone-21kc).
 
@@ -211,3 +217,4 @@ The full API and setup instructions live in the [react-arven README](https://git
 
 So I hope you find it useful, cheers :)
 
+Edit 2026-08-06: Render hierarchy vs ownership hierarchy terminology adopted
