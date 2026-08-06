@@ -217,4 +217,6 @@ The full API and setup instructions live in the [react-arven README](https://git
 
 So I hope you find it useful, cheers :)
 
-Edit 2026-08-06: Render hierarchy vs ownership hierarchy terminology adopted
+<br/>
+
+> Edit 2026-08-06: Render hierarchy vs ownership hierarchy terminology adopted
