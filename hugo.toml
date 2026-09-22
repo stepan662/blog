@@ -37,6 +37,18 @@ disablePathToLower = false
     linkedin = 'https://www.linkedin.com/in/stepan-granat/'
     x = 'https://x.com/stepan_granat'
 
+# Projects listed on the home page, in the order written here — unlike
+# [params.social], which the template sorts alphabetically. 'blurb' is
+# optional; omit it and only the name renders.
+[[params.projects]]
+  name = 'genroc'
+  url = 'https://genroc.org'
+  blurb = 'A strongly typed durable process orchestrator'
+[[params.projects]]
+  name = 'react-arven'
+  url = 'https://github.com/stepan662/react-arven'
+  blurb = 'React state management helper'
+
 [menus]
   [[menus.main]]
     name = 'home'

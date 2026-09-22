@@ -20,5 +20,23 @@
     <p class="muted">No posts yet.</p>
     {{ end }}
   </section>
+  {{- with site.Params.projects }}
+  {{- /* Header markup mirrors what Goldmark emits for the "> label" fenced
+         blocks in _index.md, so the section reads identically. */}}
+  <section class="projects">
+    <pre tabindex="0"><code>&gt; my projects
+</code></pre>
+    <ul class="project-list">
+      {{ range . }}
+      <li>
+        <a href="{{ .url }}">{{ .name }}</a>
+        {{- with .blurb }}
+        <span class="muted">{{ . }}</span>
+        {{- end }}
+      </li>
+      {{ end }}
+    </ul>
+  </section>
+  {{- end }}
 </article>
 {{ end }}
