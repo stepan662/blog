@@ -31,6 +31,8 @@ disablePathToLower = false
   # Add any platform by adding a line — the template renders them all.
   # (For email, use a mailto: URL or just the address.)
   [params.social]
+    # Quoted: an unquoted dot would make TOML read this as a [dev] table.
+    'dev.to' = 'https://dev.to/stepan662'
     github = 'https://github.com/stepan662'
     linkedin = 'https://www.linkedin.com/in/stepan-granat/'
     x = 'https://x.com/stepan_granat'
